@@ -7,8 +7,11 @@ database.connect();
 
 const app: Express = express();
 
+app.set('views', `${__dirname}/views`)
+app.set('view engine', 'pug')
+
 app.get("/", (req: Request, res: Response) => {
-    res.send("Hello, World!");
+    res.render("client/pages/index");
 });
 
 const PORT: string | number = process.env.PORT || 3000;
