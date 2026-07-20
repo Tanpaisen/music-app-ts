@@ -1,7 +1,40 @@
-html 
-  head
-    title Music App
-    link(rel="stylesheet", href="/css/style.css")
-  body
-    h1 Welcome to the Music App
-    p This is the home page of the music application.
+extend ../../layouts/default.pug
+include ../../mixins/box-head.pug
+
+block main
+  .container.my-3 
+    .row 
+      .col-12 
+        +box-head(pageTitle)
+    .row 
+      .col-6.mb-3 
+        div(class="card")
+          img(src="https://images.unsplash.com/photo-1508780709619-79562169bc64")
+          div(class="card-body")
+            h5(class="card-title") Bolero
+            p(class="card-text") Bolero là một thể loại nhạc truyền thống của Việt Nam, nổi tiếng với những giai điệu trữ tình và sâu lắng.
+            a(href="/topics/bolero" class="btn btn-primary") Xem chi tiết
+
+      .col-6.mb-3
+        div(class="card")
+          img(src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4")
+          div(class="card-body")
+            h5(class="card-title") Nhạc trẻ
+            p(class="card-text") Nhạc trẻ là thể loại nhạc phổ biến hiện nay, thường được yêu thích bởi giới trẻ với những giai điệu sôi động và lời ca gần gũi.
+            a(href="/topics/nhac-tre" class="btn btn-primary") Xem chi tiết
+
+      .col-6.mb-3 
+        div(class="card")
+          img(src="https://images.unsplash.com/photo-1511379938547-c1f69419868d")
+          div(class="card-body")
+            h5(class="card-title") Nhạc Trịnh
+            p(class="card-text") Nhạc Trịnh là thể loại nhạc trữ tình, thường được biết đến với những ca khúc của nhạc sĩ Trịnh Công Sơn, mang đậm chất thơ và triết lý.
+            a(href="/topics/nhac-trinh" class="btn btn-primary") Xem chi tiết
+
+      .col-6.mb-3 
+        div(class="card")
+          img(src="https://images.unsplash.com/photo-1507874457470-272b3c8d8ee2")
+          div(class="card-body")
+            h5(class="card-title") Nhạc vàng
+            p(class="card-text") Nhạc vàng là thể loại nhạc phổ biến ở miền Nam Việt Nam trước năm 1975, thường mang âm hưởng dân ca và trữ tình.
+            a(href="/topics/nhac-vang" class="btn btn-primary") Xem chi tiết
