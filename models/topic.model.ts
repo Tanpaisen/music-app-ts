@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 const topicSchema = new mongoose.Schema({
     title: String,
     avatar: String,
-    discription: String,
+    description: String,
     status: String,
     slug: String,
     deleted: {
