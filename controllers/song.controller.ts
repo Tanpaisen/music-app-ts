@@ -36,3 +36,22 @@ export const list = async (req: Request, res: Response) => {
         songs: songs
     });
 }
+
+//[GET] /songs/detail/:songSlug
+export const detail = async (req: Request, res: Response) => {
+    const slug = req.params.songSlug;
+    if (!slug) {
+        return res.status(400).json({ message: "Missing songSlug parameter" });
+    }
+
+    const song = await Song.findOne({
+        slug: slug,
+        deleted: false
+    })
+    console.log(song);
+
+    res.render("client/pages/songs/detail", {
+        pageTitle: "Chi tiết bài hát",
+        song: song
+    });
+}
