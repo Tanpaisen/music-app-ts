@@ -48,10 +48,21 @@ export const detail = async (req: Request, res: Response) => {
         slug: slug,
         deleted: false
     })
-    console.log(song);
+    
+    if (!song) {
+        return res.status(404).json({ message: "Song not found" });
+    }
+    
+    const topic = await Topic.findById(song.topicId);
+    song["topic"] = topic;
+
+    const singer = await Singer.findById(song.singerId).select("fullName");
+    song["singer"] = singer;
+
+    console.log("Song detail:", song);
 
     res.render("client/pages/songs/detail", {
         pageTitle: "Chi tiết bài hát",
-        song: song
+        song: song,
     });
 }
