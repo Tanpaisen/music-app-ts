@@ -1,8 +1,38 @@
 import { Request, Response } from "express";
+import Song from "../models/song.model";
+import Topic from "../models/topic.model";
+import Singer from "../models/singer.model";
 
 //[GET] /songs/:songSlug
 export const list = async (req: Request, res: Response) => {
     const slug = req.params.songSlug;
 
-    res.render("client/pages/songs/list");
+    if (!slug) {
+        return res.status(400).json({ message: "Missing songSlug parameter" });
+    }
+
+    const topic = await Topic.findOne({
+        slug: slug,
+        deleted: false
+    })
+
+    if (!topic) {
+        return res.status(404).json({ message: "Topic not found" });
+    }
+
+    const songs = await Song.find({
+        topicId: topic.id,
+    })
+
+    for (const song of songs) {
+        const singer = await Singer.findById(song.singerId).select("fullName");
+        song["singer"] = singer;
+    }
+
+
+    res.render("client/pages/songs/list", {
+        pageTitle: "Danh sách bài hát",
+        topic: topic,
+        songs: songs
+    });
 }
