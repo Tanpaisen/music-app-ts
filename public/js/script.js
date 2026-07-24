@@ -1,3 +1,4 @@
+//APLAYER
 const aplayer = document.querySelector("#aplayer")
 if (aplayer) {
     let dataSong = aplayer.getAttribute("data-song")
@@ -25,3 +26,25 @@ if (aplayer) {
         avatar.style.animationPlayState = "paused"
     });
 }
+//End APLAYER
+
+// Like song
+const btnLike = document.querySelector("[button-like]")
+if (btnLike) {
+    btnLike.addEventListener("click", () => {
+        const id = btnLike.getAttribute('button-like')
+
+        const status = btnLike.classList.contains('active') ? 'dislike' : 'like'
+
+        fetch(`/songs/like/${status}/${id}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.code == 200) {
+                    const elementNumber = btnLike.querySelector(".inner-number")
+                    elementNumber.innerHTML = data.like;
+                    btnLike.classList.toggle("active");
+                }
+            })
+    })
+}
+// End Like song

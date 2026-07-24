@@ -48,11 +48,11 @@ export const detail = async (req: Request, res: Response) => {
         slug: slug,
         deleted: false
     })
-    
+
     if (!song) {
         return res.status(404).json({ message: "Song not found" });
     }
-    
+
     const topic = await Topic.findById(song.topicId);
 
     const singer = await Singer.findById(song.singerId).select("fullName");
@@ -65,4 +65,32 @@ export const detail = async (req: Request, res: Response) => {
         singer: singer,
         topic: topic
     });
+}
+
+//[PATCH] /songs/like/yes/:songId
+export const like = async (req: Request, res: Response) => {
+    const songId = req.params.songId;
+    const status = req.params.status;
+
+    const song = await Song.findOne({
+        _id: songId,
+        deleted: false,
+        status: "active"
+    })
+    const like = song.like;
+    const newLike = status == "like" ? like + 1 : like - 1;
+
+    await Song.updateOne({
+        _id: songId,
+        deleted: false,
+        status: "active"
+    }, {
+        like: newLike
+    })
+
+    res.json({
+        code: 200,
+        message: "Thành công",
+        like: newLike
+    })
 }
