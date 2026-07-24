@@ -36,7 +36,9 @@ if (btnLike) {
 
         const status = btnLike.classList.contains('active') ? 'dislike' : 'like'
 
-        fetch(`/songs/like/${status}/${id}`)
+        fetch(`/songs/like/${status}/${id}`, {
+            method: "PATCH"
+        })
             .then(res => res.json())
             .then(data => {
                 if (data.code == 200) {
