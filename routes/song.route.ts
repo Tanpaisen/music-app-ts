@@ -10,4 +10,6 @@ router.get("/detail/:songSlug", controller.detail);
 
 router.patch("/like/:status/:songId", controller.like)
 
+router.patch("/favorite/:status/:songId", controller.favorite)
+
 export const songRouter = router;
