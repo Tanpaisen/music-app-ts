@@ -101,18 +101,18 @@ export const like = async (req: Request, res: Response) => {
 }
 
 //[PATCH] /songs/favorite/:status/:songId
-export const favorite = async (req: Request, res: Response) => {
+export const favoritePatch = async (req: Request, res: Response) => {
     const id = req.params.songId;
     const status = req.params.status
 
-    if(status == "favorite"){
+    if (status == "favorite") {
         const favoriteSong = new FavoriteSong({
             songId: id,
             userId: "",
         })
         await favoriteSong.save();
     }
-    else{
+    else {
         await FavoriteSong.deleteOne({
             songId: id,
             userId: "",
@@ -123,4 +123,34 @@ export const favorite = async (req: Request, res: Response) => {
         code: 200,
         message: status == "favorite" ? "Đã thêm vào yêu thích" : "Đã xóa yêu thích"
     })
+}
+
+//[GET] /songs/favorite
+export const favorite = async (req: Request, res: Response) => {
+    const favoriteSongs = await FavoriteSong.find({
+        deleted: false,
+        userId: "",
+    });
+    
+    for (const item of favoriteSongs) {
+        const song = await Song.findOne({
+           _id: item.songId,
+            deleted: false,
+            status: "active"
+        });
+        item["song"] = song;
+
+        const singer = await Singer.findOne({
+            _id: song.singerId,
+            deleted: false
+        })
+        item["singer"]=singer;
+    }
+
+    res.render("client/pages/songs/favorite",
+        {
+            pageTitle: "Trang bài hát yêu thích",
+            favoriteSongs: favoriteSongs
+        }
+    )
 }
