@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import Song from "../models/song.model";
 import Singer from "../models/singer.model";
+import unidecode from "unidecode"
 
 //[GET] /search/result
 export const result = async (req: Request, res: Response) => {
@@ -10,11 +11,17 @@ export const result = async (req: Request, res: Response) => {
     let songs = [];
     if (keyword) {
         const keywordRegex = new RegExp(keyword, 'i');
+        const unidecodeKeyword = unidecode(keyword).trim()
+        const keywordSlug = unidecodeKeyword.replace(/\s+/g, '-')
+        const slugRegex = new RegExp(keywordSlug, 'i')
 
         songs = await Song.find({
             deleted: false,
-            title: keywordRegex,
-            status: "active"
+            status: "active",
+            $or: [
+                { title: keywordRegex },
+                { slug: slugRegex }
+            ]
         })
 
         for (const item of songs) {

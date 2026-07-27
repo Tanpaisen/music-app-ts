@@ -14,7 +14,8 @@
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "mongoose": "^9.7.4",
-    "pug": "^3.0.4"
+    "pug": "^3.0.4",
+    "unidecode": "^1.1.0"
   },
   "devDependencies": {
     "@types/express": "^5.0.6",
