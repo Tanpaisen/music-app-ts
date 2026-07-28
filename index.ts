@@ -1,10 +1,10 @@
 import express, { Express, Request, Response } from "express";
 import dotenv from "dotenv";
+dotenv.config();
 import * as database from "./config/database";
 import { routeMain } from "./routes/index.route";
+import { syncSongsToMeili } from "./services/meilisearch.service"
 
-
-dotenv.config();
 database.connect();
 
 const app: Express = express();
@@ -16,6 +16,9 @@ app.use(express.static(__dirname + '/public'));
 routeMain(app);
 
 const PORT: string | number = process.env.PORT || 3000;
+
+//meilisearch
+syncSongsToMeili()
 
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
