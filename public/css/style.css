@@ -308,17 +308,17 @@
 }
 
 .box-search .inner-suggest .inner-item .inner-info .inner-title {
-  white-space: pre-wrap;
+  display: -webkit-box;
+  -webkit-line-clamp: 1; /* số dòng muốn hiển thị */
+  -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
-  -webkit-line-clamp: 1;
-  -webkit-box-orient: vertical;
-  display: -webkit-box;
   margin-bottom: 5px;
   font-size: 14px;
   font-weight: 700;
   color: #4d007d;
 }
+
 
 .box-search .inner-suggest .inner-item .inner-info .inner-singer {
   font-size: 13px;

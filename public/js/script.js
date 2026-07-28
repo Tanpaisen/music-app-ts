@@ -73,3 +73,49 @@ if (listBtnFavorite.length > 0) {
     })
 }
 // End Favorite song
+
+// Suggest search
+const boxSearch = document.querySelector(".box-search")
+if (boxSearch) {
+  const input = boxSearch.querySelector("input[name='keyword']")
+  input.addEventListener('input', () => {
+    const keyword = input.value.trim();
+    const innerSuggest = boxSearch.querySelector('.inner-suggest');
+    const innerList = innerSuggest.querySelector('.inner-list');
+
+    if (keyword !== "") {
+      fetch(`/search/suggest?keyword=${keyword}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.code == 200) {
+            const songs = data.songDetail || [];
+            if (songs.length > 0) {
+              const arrHTML = songs.map(item => `
+                <a href="/songs/detail/${item.slug}" class="inner-item">
+                  <div class="inner-image">
+                    <img src="${item.avatar}">
+                  </div>
+                  <div class="inner-info">
+                    <div class="inner-title">${item.title}</div>
+                    <div class="inner-singer">
+                      <i class="fa-solid fa-microphone-lines"></i> ${item.singer.fullName}
+                    </div>
+                  </div>
+                </a>
+              `);
+              innerList.innerHTML = arrHTML.join("");
+              innerSuggest.classList.add('show');
+            } else {
+              innerList.innerHTML = "";
+              innerSuggest.classList.remove('show');
+            }
+          }
+        })
+    } else {
+      innerList.innerHTML = "";
+      innerSuggest.classList.remove('show');
+    }
+  })
+}
+
+// End Suggest search
