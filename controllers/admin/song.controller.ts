@@ -37,7 +37,6 @@ export const create = async (req: Request, res: Response) => {
 
 //[POST] /admin/topics/create
 export const createPost = async (req: Request, res: Response) => {
-    console.log(req.body)
     if(req.body.avatar) {
         req.body.avatar = req.body.avatar[0]
     }

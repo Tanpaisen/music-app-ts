@@ -1,46 +1,19 @@
-import { Request, Response, NextFunction } from 'express';
-import { v2 as cloudinary } from 'cloudinary';
-import streamifier from 'streamifier';
-import dotenv from 'dotenv';
+import { Request, Response, NextFunction } from "express";
+import { uploadToCloudinary } from "../helpers/uploadToCloudinary";
 
-dotenv.config();
-
-// Cloudinary configuration
-cloudinary.config({
-  cloud_name: process.env.CLOUD_NAME,
-  api_key: process.env.CLOUD_KEY,
-  api_secret: process.env.CLOUD_SECRET,
-});
-
-// Stream upload helper
-const streamUpload = (buffer: Buffer) => {
-  return new Promise((resolve, reject) => {
-    const stream = cloudinary.uploader.upload_stream(
-      { resource_type: 'auto' },
-      (error, result) => {
-        if (result) resolve(result);
-        else reject(error);
-      }
-    );
-    streamifier.createReadStream(buffer).pipe(stream);
-  });
-};
-
-// Middleware for single file upload
 export const uploadSingle = async (
   req: Request,
   res: Response,
   next: NextFunction
-) => {
-  try {
-    const result = await streamUpload(req['file'].buffer);
-    req.body[req['file'].fieldname] = result['url'];
-  } catch (error) {
-    console.error(error);
-    next(error);
+): Promise<void> => {
+  if(req["file"]) {
+    const link = await uploadToCloudinary(req["file"].buffer);
+    req.body[req["file"].fieldname] = link;
+    next();
+  } else {
+    next();
   }
-  next();
-};
+}
 
 // Middleware for multiple field uploads
 export const uploadFields = async (
@@ -48,7 +21,6 @@ export const uploadFields = async (
   res: Response,
   next: NextFunction
 ) => {
-  console.log(req['files']);
 
   for (const key in req['files']) {
     req.body[key] = [];
@@ -56,8 +28,8 @@ export const uploadFields = async (
 
     for (const item of array) {
       try {
-        const result = await streamUpload(item.buffer);
-        req.body[key].push(result['url']);
+        const result = await uploadToCloudinary(item.buffer);
+        req.body[key].push(result);
       } catch (error) {
         console.error(error);
       }
