@@ -7,6 +7,7 @@ import { syncSongsToMeili } from "./services/meilisearch.service"
 import { routeAdmin } from "./routes/admin/index.route";
 import path from "path";
 import { systemConfig } from "./config/system";
+import bodyParser from "body-parser";
 
 database.connect();
 
@@ -24,7 +25,8 @@ routeAdmin(app);
 
 const PORT: string | number = process.env.PORT || 3000;
 
-
+// parse application/x-www-form-urlencoded
+app.use(bodyParser.urlencoded({ extended: false }))
 
 //TinyMCE
 app.use('/tinymce', express.static(path.join(__dirname, 'node_modules', 'tinymce')));

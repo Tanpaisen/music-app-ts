@@ -11,7 +11,7 @@ export const index = async (req: Request, res: Response) => {
         deleted: false,
     })
 
-    res.render('admin/pages/songs/index',{
+    res.render('admin/pages/songs/index', {
         pageTitle: "Trang quản lý bài hát",
         songs: songs
     })
@@ -27,9 +27,16 @@ export const create = async (req: Request, res: Response) => {
         deleted: false
     }).select("fullName")
 
-    res.render('admin/pages/songs/create',{
+    res.render('admin/pages/songs/create', {
         pageTitle: "Trang quản lý bài hát",
         topics: topics,
         singers: singers
     })
+}
+
+//[POST] /admin/topics/create
+export const createPost = async (req: Request, res: Response) => {
+    console.log(req.body)
+    
+    res.send("ok")
 }
