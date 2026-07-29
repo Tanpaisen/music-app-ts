@@ -154,3 +154,28 @@ export const favorite = async (req: Request, res: Response) => {
         }
     )
 }
+
+//[PATCH] /songs/listen/:songSlug
+export const listenPatch = async (req: Request, res: Response) => {
+    const songSlug = req.params.songSlug;
+    const song = await Song.findOne({
+        slug: songSlug,
+        deleted: false,
+        status: "active"
+    })
+    const newListen = song.listen + 1;
+
+    await Song.updateOne({
+        slug: songSlug,
+        deleted: false,
+        status: "active"
+    },{
+        listen: newListen
+    })
+
+    res.json({
+        code: 200,
+        message: "Đã xem",
+        listen: newListen
+    })
+}

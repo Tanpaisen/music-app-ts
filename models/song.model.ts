@@ -11,6 +11,10 @@ const songSchema = new mongoose.Schema(
     },
     topicId: String,
     like: Number,
+    listen: {
+      type: Number,
+      default: 0,
+    },
     lyrics: String,
     audio: String,
     status: String,
