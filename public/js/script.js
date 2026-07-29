@@ -17,24 +17,46 @@ if (aplayer) {
     autoplay: true,
   });
 
+  const avatar = document.querySelector(".inner-play .inner-avatar");
+  const listenNumber = document.querySelector('.singer-detail .inner-actions .inner-listen .inner-number');
+
+  let listenTimer = null;
+  let isListened = false;
+
+  // Khi bấm PLAY
   ap.on('play', function () {
-    const avatar = document.querySelector(".inner-play .inner-avatar")
-    avatar.style.animationPlayState = "running"
+    if (avatar) avatar.style.animationPlayState = "running";
+
+    // Nếu lượt phát này chưa tính view
+    if (!isListened) {
+      // Đếm ngược 3'
+      const time = 1 * 1000 * 60 ;
+      listenTimer = setTimeout(() => {
+        fetch(`/songs/listen/${dataSong.slug}`, {
+          method: "PATCH"
+        })
+          .then(res => res.json())
+          .then(data => {
+            if (listenNumber && data.listen !== undefined) {
+              listenNumber.innerHTML = data.listen;
+            }
+            isListened = true; 
+          })
+          .catch(err => console.error("Lỗi tăng lượt nghe:", err));
+      }, time);
+    }
   });
+
+  // Khi TẠM DỪNG (PAUSE) -> Dừng xoay avatar & Hủy đếm ngược nếu chưa đủ 3s
   ap.on('pause', function () {
-    const avatar = document.querySelector(".inner-play .inner-avatar")
-    avatar.style.animationPlayState = "paused"
+    if (avatar) avatar.style.animationPlayState = "paused";
+    if (listenTimer) clearTimeout(listenTimer);
   });
+
+  // Khi bài hát HẾT hoặc ĐỔI BÀI -> Reset cờ để lượt nghe sau được tính tiếp
   ap.on('ended', function () {
-    fetch(`/songs/listen/${dataSong.slug}`, {
-      method: "PATCH"
-    })
-      .then(res => res.json())
-      .then(data => {
-        const listenNumber = document.querySelector('.singer-detail .inner-actions .inner-listen .inner-number');
-        listenNumber.innerHTML = data.listen;
-      })
-  })
+    isListened = false;
+  });
 }
 //End APLAYER
 
