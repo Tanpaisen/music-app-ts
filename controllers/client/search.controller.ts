@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
-import Song from "../models/song.model";
-import Singer from "../models/singer.model";
+import Song from "../../models/song.model";
+import Singer from "../../models/singer.model";
 import unidecode from "unidecode"
-import { getSongIndex } from "../services/meilisearch.service"
+import { getSongIndex } from "../../services/meilisearch.service"
 
 enum typeSearch {
     RESULT = "result",

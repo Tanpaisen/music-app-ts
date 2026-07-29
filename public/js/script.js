@@ -29,7 +29,7 @@ if (aplayer) {
 
     // Nếu lượt phát này chưa tính view
     if (!isListened) {
-      // Đếm ngược 3'
+      // Đếm ngược 1'
       const time = 1 * 1000 * 60 ;
       listenTimer = setTimeout(() => {
         fetch(`/songs/listen/${dataSong.slug}`, {

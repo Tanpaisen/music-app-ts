@@ -2,7 +2,7 @@ import express, { Express, Request, Response } from "express";
 import dotenv from "dotenv";
 dotenv.config();
 import * as database from "./config/database";
-import { routeMain } from "./routes/index.route";
+import { routeMain } from "./routes/client/index.route"
 import { syncSongsToMeili } from "./services/meilisearch.service"
 
 database.connect();
