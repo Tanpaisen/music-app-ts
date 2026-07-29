@@ -41,3 +41,28 @@ export const uploadSingle = async (
   }
   next();
 };
+
+// Middleware for multiple field uploads
+export const uploadFields = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  console.log(req['files']);
+
+  for (const key in req['files']) {
+    req.body[key] = [];
+    const array = req['files'][key];
+
+    for (const item of array) {
+      try {
+        const result = await streamUpload(item.buffer);
+        req.body[key].push(result['url']);
+      } catch (error) {
+        console.error(error);
+      }
+    }
+  }
+
+  next();
+};
