@@ -13,3 +13,19 @@ export const index = async (req: Request, res: Response) => {
         topics: topics
     })
 }
+
+//[GET] /admin/topics/detail/:id
+export const detail = async (req: Request, res: Response) => {
+    const id = req.params.id;
+
+    const topic = await Topic.findOne({
+        _id: id,
+        deleted: false,
+        status: "active"
+    })
+
+    res.render('admin/pages/topics/detail',{
+        pageTitle: "Trang chi tiết chủ đề",
+        topic: topic
+    })
+}
