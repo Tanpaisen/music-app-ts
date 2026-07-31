@@ -12,11 +12,22 @@ router.get("/", controller.index);
 
 router.get("/create", controller.create);
 
+router.get("/edit/:id", controller.edit);
+
 router.post("/create", upload.fields([
     { name: 'avatar', maxCount: 1 },
     { name: 'audio', maxCount: 1 }
 ]),
     uploadCloud.uploadFields,
-    controller.createPost);
+    controller.createPost
+);
+
+router.patch("/edit/:id", upload.fields([
+    { name: 'avatar', maxCount: 1 },
+    { name: 'audio', maxCount: 1 }
+]),
+    uploadCloud.uploadFields,
+    controller.editPatch
+);
 
 export const songRouter = router;

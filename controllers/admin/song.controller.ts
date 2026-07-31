@@ -57,3 +57,52 @@ export const createPost = async (req: Request, res: Response) => {
     await song.save();
     res.redirect(`/${systemConfig.prefixAdmin}/songs/create`)
 }
+
+//[GET] /admin/topics/edit/:id
+export const edit = async (req: Request, res: Response) => {
+    const id = req.params.id;
+    const song = await Song.findOne({
+        _id: id,
+        deleted: false,
+    })
+    const topics = await Topic.find({
+        deleted: false,
+    }).select('title')
+
+    const singers = await Singer.find({
+        deleted: false
+    }).select("fullName")
+
+    res.render('admin/pages/songs/edit', {
+        pageTitle: "Trang quản lý bài hát",
+        topics: topics,
+        singers: singers,
+        song: song
+    })
+}
+
+//[PATCH] /admin/topics/edit/:id
+export const editPatch = async (req: Request, res: Response) => {
+    const id = req.params.id;
+
+    const data = {
+        title: req.body.title,
+        description: req.body.description,
+        singerId: req.body.singerId,
+        topicId: req.body.topicId,
+        status: req.body.status,
+        lyrics: req.body.lyrics,
+    }
+
+    if(req.body.avatar) {
+        data['avatar'] = req.body.avatar[0]
+    }
+    if(req.body.audio) {
+        data['audio'] = req.body.audio[0]
+    }
+    await Song.updateOne({
+        _id: id,
+        deleted: false
+    },data)
+    res.redirect(`/${systemConfig.prefixAdmin}/songs/create`)
+}
