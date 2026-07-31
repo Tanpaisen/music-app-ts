@@ -8,6 +8,7 @@ import { routeAdmin } from "./routes/admin/index.route";
 import path from "path";
 import { systemConfig } from "./config/system";
 import bodyParser from "body-parser";
+import methodOverride from 'method-override'
 
 database.connect();
 
@@ -16,6 +17,9 @@ const app: Express = express();
 app.set('views', `${__dirname}/views`)
 app.set('view engine', 'pug')
 app.use(express.static(__dirname + '/public'));
+
+// method-override
+app.use(methodOverride('_method'))
 
 // App Local Variables
 app.locals.prefixAdmin = systemConfig.prefixAdmin;

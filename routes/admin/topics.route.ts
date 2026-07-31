@@ -8,5 +8,7 @@ router.get("/", controller.index);
 
 router.get("/detail/:id", controller.detail);
 
+router.patch("/change-status/:status/:id", controller.changeStatus);
+
 
 export const topicRouter = router;

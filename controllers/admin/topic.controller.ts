@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import Topic from "../../models/topic.model";
+import { systemConfig } from "../../config/system";
 
 
 //[GET] /admin/topics
@@ -8,7 +9,7 @@ export const index = async (req: Request, res: Response) => {
         deleted: false,
     })
 
-    res.render('admin/pages/topics/index',{
+    res.render('admin/pages/topics/index', {
         pageTitle: "Trang quản lý chủ đề",
         topics: topics
     })
@@ -24,8 +25,22 @@ export const detail = async (req: Request, res: Response) => {
         status: "active"
     })
 
-    res.render('admin/pages/topics/detail',{
+    res.render('admin/pages/topics/detail', {
         pageTitle: "Trang chi tiết chủ đề",
         topic: topic
     })
+}
+
+//[PATCH] /admin/topics/change-status/:status/:id
+export const changeStatus = async (req: Request, res: Response) => {
+
+    const { status, id } = req.params
+    const topic = await Topic.updateOne({
+        _id: id,
+        deleted: false
+    },{
+        status: status
+    })
+    const backUrl = req.get("Referer") || `${systemConfig.prefixAdmin}/products`;
+    res.redirect(backUrl);
 }

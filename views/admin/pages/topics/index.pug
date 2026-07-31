@@ -44,11 +44,17 @@ block main
                     a(
                       href="javascript:;"
                       class="badge badge-success"
+                      data-status=item.status
+                      data-id= item.id
+                      button-change-status
                     ) Hoạt động
                   else
                     a(
                       href="javascript:;"
                       class="badge badge-danger"
+                      data-status=item.status
+                      data-id= item.id
+                      button-change-status
                     ) Dừng hoạt động
                 td
                   a(
@@ -64,3 +70,9 @@ block main
                     button-delete
                     data-id=item.id
                   ) Xóa
+  form(
+    action=""
+    method="POST"
+    id="form-change"
+    data-path=`${prefixAdmin}/topics/change-status`
+)
