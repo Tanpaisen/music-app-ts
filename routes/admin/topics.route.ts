@@ -13,12 +13,20 @@ router.get("/detail/:id", controller.detail);
 
 router.patch("/change-status/:status/:id", controller.changeStatus);
 
+router.get("/create", controller.create);
+
 router.get("/edit/:id", controller.edit);
 
 router.patch("/edit/:id",
     upload.single('avatar'),
     uploadCloud.uploadSingle,
     controller.editPatch
+);
+
+router.post("/create",
+    upload.single('avatar'),
+    uploadCloud.uploadSingle,
+    controller.createPost
 );
 
 

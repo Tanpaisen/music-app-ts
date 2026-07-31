@@ -41,9 +41,34 @@ export const edit = async (req: Request, res: Response) => {
     })
 
     res.render('admin/pages/topics/edit', {
-        pageTitle: "Trang chi tiết chủ đề",
+        pageTitle: "Trang chỉnh sửa chủ đề",
         topic: topic
     })
+}
+
+//[GET] /admin/topics/create
+export const create = async (req: Request, res: Response) => {
+    
+    res.render('admin/pages/topics/create', {
+        pageTitle: "Trang thêm mới chủ đề",
+    })
+}
+
+//[POST] /admin/topics/create
+export const createPost = async (req: Request, res: Response) => {
+    
+    const data = {
+        title: req.body.title,
+        description: req.body.description,
+        avatar: req.body.avatar,
+        status: req.body.status
+    }
+    
+    const topic = new Topic(data)
+    await topic.save()
+    
+    const backUrl = req.get("Referer") || `${systemConfig.prefixAdmin}/products`;
+    res.redirect(backUrl);
 }
 
 //[PATCH] /admin/topics/edit/:id
