@@ -17,6 +17,8 @@ router.get("/create", controller.create);
 
 router.get("/edit/:id", controller.edit);
 
+router.delete("/delete/:id", controller.deleteOne);
+
 router.patch("/edit/:id",
     upload.single('avatar'),
     uploadCloud.uploadSingle,

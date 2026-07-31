@@ -48,7 +48,7 @@ export const edit = async (req: Request, res: Response) => {
 
 //[GET] /admin/topics/create
 export const create = async (req: Request, res: Response) => {
-    
+
     res.render('admin/pages/topics/create', {
         pageTitle: "Trang thêm mới chủ đề",
     })
@@ -56,17 +56,17 @@ export const create = async (req: Request, res: Response) => {
 
 //[POST] /admin/topics/create
 export const createPost = async (req: Request, res: Response) => {
-    
+
     const data = {
         title: req.body.title,
         description: req.body.description,
         avatar: req.body.avatar,
         status: req.body.status
     }
-    
+
     const topic = new Topic(data)
     await topic.save()
-    
+
     const backUrl = req.get("Referer") || `${systemConfig.prefixAdmin}/products`;
     res.redirect(backUrl);
 }
@@ -84,6 +84,22 @@ export const editPatch = async (req: Request, res: Response) => {
     const backUrl = req.get("Referer") || `${systemConfig.prefixAdmin}/products`;
     res.redirect(backUrl);
 }
+
+//[DELETE] /admin/topics/delete/:id
+export const deleteOne = async (req: Request, res: Response) => {
+
+    await Topic.updateOne({
+        _id: req.params.id,
+        deleted: false
+    },
+        {
+            deleted: true
+        })
+
+    const backUrl = req.get("Referer") || `${systemConfig.prefixAdmin}/products`;
+    res.redirect(backUrl);
+}
+
 //[PATCH] /admin/topics/change-status/:status/:id
 export const changeStatus = async (req: Request, res: Response) => {
 
