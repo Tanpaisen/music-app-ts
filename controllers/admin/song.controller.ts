@@ -50,7 +50,8 @@ export const createPost = async (req: Request, res: Response) => {
         singerId: req.body.singerId,
         topicId: req.body.topicId,
         status: req.body.status,
-        audio: req.body.audio
+        audio: req.body.audio,
+        lyrics: req.body.lyrics,
     }
     const song = new Song(data);
     await song.save();

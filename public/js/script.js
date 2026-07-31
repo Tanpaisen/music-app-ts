@@ -1,3 +1,19 @@
+function htmlToPlain(html) {
+  // decode entity HTML
+  let textarea = document.createElement("textarea");
+  textarea.innerHTML = html;
+  let decoded = textarea.value;
+
+  // thay <br> bằng xuống dòng
+  decoded = decoded.replace(/<br\s*\/?>/gi, "\n");
+
+  // loại bỏ thẻ <p> hoặc thẻ khác
+  decoded = decoded.replace(/<\/?[^>]+(>|$)/g, "");
+
+  return decoded.trim();
+}
+
+
 //APLAYER
 const aplayer = document.querySelector("#aplayer")
 if (aplayer) {
@@ -5,14 +21,18 @@ if (aplayer) {
   dataSong = JSON.parse(dataSong)
   let dataSinger = aplayer.getAttribute("data-singer")
   dataSinger = JSON.parse(dataSinger)
+  let dataLyric = aplayer.getAttribute("data-lyrics")
+  dataLyric = htmlToPlain(dataLyric)
 
   const ap = new APlayer({
     container: document.getElementById('aplayer'),
+    lrcType: 1,
     audio: [{
       name: dataSong.title,
       artist: dataSinger.fullName,
       url: dataSong.audio,
       cover: dataSong.avatar,
+      lrc: dataLyric
     }],
     autoplay: true,
   });
@@ -30,7 +50,7 @@ if (aplayer) {
     // Nếu lượt phát này chưa tính view
     if (!isListened) {
       // Đếm ngược 1'
-      const time = 1 * 1000 * 60 ;
+      const time = 1 * 1000 * 60;
       listenTimer = setTimeout(() => {
         fetch(`/songs/listen/${dataSong.slug}`, {
           method: "PATCH"
@@ -40,7 +60,7 @@ if (aplayer) {
             if (listenNumber && data.listen !== undefined) {
               listenNumber.innerHTML = data.listen;
             }
-            isListened = true; 
+            isListened = true;
           })
           .catch(err => console.error("Lỗi tăng lượt nghe:", err));
       }, time);
