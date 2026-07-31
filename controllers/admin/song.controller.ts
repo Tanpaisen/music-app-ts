@@ -104,5 +104,5 @@ export const editPatch = async (req: Request, res: Response) => {
         _id: id,
         deleted: false
     },data)
-    res.redirect(`/${systemConfig.prefixAdmin}/songs/create`)
+    res.redirect(`/${systemConfig.prefixAdmin}/songs/edit/${id}`)
 }
