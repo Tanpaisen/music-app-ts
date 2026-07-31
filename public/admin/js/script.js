@@ -15,7 +15,7 @@ if (uploadImage) {
 
 // upload-image
 const uploadAudio = document.querySelector("[upload-audio]");
-if (uploadImage) {
+if (uploadAudio) {
   const uploadAudioInput = uploadAudio.querySelector("[upload-audio-input]");
   const uploadAudioPlay = uploadAudio.querySelector("[upload-audio-play]");
   const uploadAudioSource = uploadAudio.querySelector("source");

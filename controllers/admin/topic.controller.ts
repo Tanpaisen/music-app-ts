@@ -31,14 +31,42 @@ export const detail = async (req: Request, res: Response) => {
     })
 }
 
+//[GET] /admin/topics/edit/:id
+export const edit = async (req: Request, res: Response) => {
+    const id = req.params.id;
+
+    const topic = await Topic.findOne({
+        _id: id,
+        deleted: false,
+    })
+
+    res.render('admin/pages/topics/edit', {
+        pageTitle: "Trang chi tiết chủ đề",
+        topic: topic
+    })
+}
+
+//[PATCH] /admin/topics/edit/:id
+export const editPatch = async (req: Request, res: Response) => {
+
+    const id = req.params.id;
+
+    await Topic.updateOne({
+        _id: id,
+        deleted: false
+    }, req.body
+    )
+    const backUrl = req.get("Referer") || `${systemConfig.prefixAdmin}/products`;
+    res.redirect(backUrl);
+}
 //[PATCH] /admin/topics/change-status/:status/:id
 export const changeStatus = async (req: Request, res: Response) => {
 
     const { status, id } = req.params
-    const topic = await Topic.updateOne({
+    await Topic.updateOne({
         _id: id,
         deleted: false
-    },{
+    }, {
         status: status
     })
     const backUrl = req.get("Referer") || `${systemConfig.prefixAdmin}/products`;

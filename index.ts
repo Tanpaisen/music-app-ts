@@ -21,6 +21,13 @@ app.use(express.static(__dirname + '/public'));
 // method-override
 app.use(methodOverride('_method'))
 
+// parse application/x-www-form-urlencoded
+app.use(bodyParser.urlencoded({ extended: false }))
+
+//TinyMCE
+app.use('/tinymce', express.static(path.join(__dirname, 'node_modules', 'tinymce')));
+//End TinyMCE
+
 // App Local Variables
 app.locals.prefixAdmin = systemConfig.prefixAdmin;
 
@@ -28,13 +35,6 @@ routeMain(app);
 routeAdmin(app);
 
 const PORT: string | number = process.env.PORT || 3000;
-
-// parse application/x-www-form-urlencoded
-app.use(bodyParser.urlencoded({ extended: false }))
-
-//TinyMCE
-app.use('/tinymce', express.static(path.join(__dirname, 'node_modules', 'tinymce')));
-//End TinyMCE
 
 //meilisearch
 syncSongsToMeili()
