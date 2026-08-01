@@ -41,7 +41,6 @@ const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
 const database = __importStar(require("./config/database"));
 const index_route_1 = require("./routes/client/index.route");
-const meilisearch_service_1 = require("./services/meilisearch.service");
 const index_route_2 = require("./routes/admin/index.route");
 const path_1 = __importDefault(require("path"));
 const system_1 = require("./config/system");
@@ -59,7 +58,6 @@ app.locals.prefixAdmin = system_1.systemConfig.prefixAdmin;
 (0, index_route_1.routeMain)(app);
 (0, index_route_2.routeAdmin)(app);
 const PORT = process.env.PORT || 3000;
-(0, meilisearch_service_1.syncSongsToMeili)();
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });

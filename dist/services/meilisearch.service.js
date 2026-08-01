@@ -36,18 +36,15 @@ const syncSongsToMeili = () => __awaiter(void 0, void 0, void 0, function* () {
             deleted: false,
             status: 'active'
         }).populate('singerId');
-        const documents = songs.map((song) => {
-            var _a;
-            return ({
-                id: song._id.toString(),
-                title: song.title,
-                slug: song.slug,
-                status: song.status,
-                deleted: song.deleted,
-                fullName: ((_a = song.singerId) === null || _a === void 0 ? void 0 : _a.fullName) || '',
-                avatar: song.avatar,
-            });
-        });
+        const documents = songs.map((song) => { var _a; return ({
+            id: song._id.toString(),
+            title: song.title,
+            slug: song.slug,
+            status: song.status,
+            deleted: song.deleted,
+            fullName: ((_a = song.singerId) === null || _a === void 0 ? void 0 : _a.fullName) || '',
+            avatar: song.avatar,
+        }); });
         yield songIndex.addDocuments(documents);
         console.log('✅ [Meilisearch] Đồng bộ dữ liệu thành công!');
     }
