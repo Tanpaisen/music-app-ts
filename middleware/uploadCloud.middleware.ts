@@ -21,10 +21,13 @@ export const uploadFields = async (
   res: Response,
   next: NextFunction
 ) => {
+  // 1. Ép kiểu req.files thành một Object rõ ràng
+  const files = req.files as { [fieldname: string]: any[] };
 
-  for (const key in req['files']) {
+  // 2. Dùng biến files vừa ép kiểu để lặp
+  for (const key in files) {
     req.body[key] = [];
-    const array = req['files'][key];
+    const array = files[key];
 
     for (const item of array) {
       try {

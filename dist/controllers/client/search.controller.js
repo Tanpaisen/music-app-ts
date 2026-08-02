@@ -37,22 +37,22 @@ const type = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 { title: keywordRegex },
                 { slug: slugRegex }
             ]
-        });
+        }).lean();
         for (const item of songs) {
             const singer = yield singer_model_1.default.findOne({
                 _id: item.singerId,
                 deleted: false,
                 status: "active"
             });
-            item["singer"] = singer;
+            item.singer = singer;
             songDetail.push({
-                _id: item.id,
+                _id: item._id,
                 avatar: item.avatar,
                 title: item.title,
                 like: item.like,
                 slug: item.slug,
                 singer: {
-                    fullName: singer.fullName
+                    fullName: singer === null || singer === void 0 ? void 0 : singer.fullName
                 },
             });
         }

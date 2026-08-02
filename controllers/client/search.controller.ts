@@ -29,24 +29,24 @@ export const type = async (req: Request, res: Response) => {
                 { title: keywordRegex },
                 { slug: slugRegex }
             ]
-        })
+        }).lean();
 
         for (const item of songs) {
             const singer = await Singer.findOne({
                 _id: item.singerId,
                 deleted: false,
                 status: "active"
-            })
-            item["singer"] = singer;
+            });
+            (item as any).singer = singer;
 
             songDetail.push({
-                _id: item.id,
+                _id: item._id,
                 avatar: item.avatar,
                 title: item.title,
                 like: item.like,
                 slug: item.slug,
                 singer: {
-                    fullName: singer.fullName
+                    fullName: singer?.fullName
                 },
             })
         }

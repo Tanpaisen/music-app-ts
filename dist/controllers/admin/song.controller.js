@@ -93,10 +93,10 @@ const editPatch = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         status: req.body.status,
         lyrics: req.body.lyrics,
     };
-    if (req.body.avatar) {
+    if (req.body.avatar[0]) {
         data['avatar'] = req.body.avatar[0];
     }
-    if (req.body.audio) {
+    if (req.body.audio[0]) {
         data['audio'] = req.body.audio[0];
     }
     yield song_model_1.default.updateOne({

@@ -23,9 +23,10 @@ const uploadSingle = (req, res, next) => __awaiter(void 0, void 0, void 0, funct
 });
 exports.uploadSingle = uploadSingle;
 const uploadFields = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    for (const key in req['files']) {
+    const files = req.files;
+    for (const key in files) {
         req.body[key] = [];
-        const array = req['files'][key];
+        const array = files[key];
         for (const item of array) {
             try {
                 const result = yield (0, uploadToCloudinary_1.uploadToCloudinary)(item.buffer);

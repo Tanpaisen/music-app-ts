@@ -31,10 +31,10 @@ const list = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
     const songs = yield song_model_1.default.find({
         topicId: topic.id,
-    });
+    }).lean();
     for (const song of songs) {
         const singer = yield singer_model_1.default.findById(song.singerId).select("fullName");
-        song["singer"] = singer;
+        song.singer = singer;
     }
     res.render("client/pages/songs/list", {
         pageTitle: "Danh sách bài hát",
@@ -51,7 +51,8 @@ const detail = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const song = yield song_model_1.default.findOne({
         slug: slug,
         deleted: false
-    });
+    }).populate("topicId")
+        .populate("singerId", "fullName");
     if (!song) {
         return res.status(404).json({ message: "Song not found" });
     }
@@ -61,7 +62,7 @@ const detail = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         songId: song.id,
         userId: "",
     });
-    song['favorite'] = favorite;
+    song.favorite = favorite;
     res.render("client/pages/songs/detail", {
         pageTitle: "Chi tiết bài hát",
         song: song,
@@ -71,6 +72,7 @@ const detail = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 });
 exports.detail = detail;
 const like = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     const songId = req.params.songId;
     const status = req.params.status;
     const song = yield song_model_1.default.findOne({
@@ -78,7 +80,10 @@ const like = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         deleted: false,
         status: "active"
     });
-    const like = song.like;
+    let like = 0;
+    if (song) {
+        like = (_a = song.like) !== null && _a !== void 0 ? _a : 0;
+    }
     const newLike = status == "like" ? like + 1 : like - 1;
     yield song_model_1.default.updateOne({
         _id: songId,
@@ -120,19 +125,21 @@ const favorite = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const favoriteSongs = yield favorite_song_model_1.default.find({
         deleted: false,
         userId: "",
-    });
+    }).lean();
     for (const item of favoriteSongs) {
         const song = yield song_model_1.default.findOne({
             _id: item.songId,
             deleted: false,
             status: "active"
-        });
-        item["song"] = song;
-        const singer = yield singer_model_1.default.findOne({
-            _id: song.singerId,
-            deleted: false
-        });
-        item["singer"] = singer;
+        }).lean();
+        if (song) {
+            item.song = song;
+            const singer = yield singer_model_1.default.findOne({
+                _id: song.singerId,
+                deleted: false
+            }).lean();
+            item.singer = singer;
+        }
     }
     res.render("client/pages/songs/favorite", {
         pageTitle: "Trang bài hát yêu thích",
@@ -141,13 +148,21 @@ const favorite = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 });
 exports.favorite = favorite;
 const listenPatch = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     const songSlug = req.params.songSlug;
     const song = yield song_model_1.default.findOne({
         slug: songSlug,
         deleted: false,
         status: "active"
     });
-    const newListen = song.listen + 1;
+    if (!song) {
+        return res.json({
+            code: 404,
+            message: "Không tìm thấy bài hát"
+        });
+    }
+    const currentListen = (_a = song.listen) !== null && _a !== void 0 ? _a : 0;
+    const newListen = currentListen + 1;
     yield song_model_1.default.updateOne({
         slug: songSlug,
         deleted: false,

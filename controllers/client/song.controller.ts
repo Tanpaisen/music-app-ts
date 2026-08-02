@@ -23,11 +23,11 @@ export const list = async (req: Request, res: Response) => {
 
     const songs = await Song.find({
         topicId: topic.id,
-    })
+    }).lean();
 
     for (const song of songs) {
         const singer = await Singer.findById(song.singerId).select("fullName");
-        song["singer"] = singer;
+        (song as any).singer = singer;
     }
 
 
@@ -48,7 +48,8 @@ export const detail = async (req: Request, res: Response) => {
     const song = await Song.findOne({
         slug: slug,
         deleted: false
-    })
+    }).populate("topicId")
+        .populate("singerId", "fullName");
 
     if (!song) {
         return res.status(404).json({ message: "Song not found" });
@@ -61,8 +62,8 @@ export const detail = async (req: Request, res: Response) => {
     const favorite = await FavoriteSong.findOne({
         songId: song.id,
         userId: "",
-    })
-    song['favorite'] = favorite
+    });
+    (song as any).favorite = favorite;
 
     res.render("client/pages/songs/detail", {
         pageTitle: "Chi tiết bài hát",
@@ -82,7 +83,13 @@ export const like = async (req: Request, res: Response) => {
         deleted: false,
         status: "active"
     })
-    const like = song.like;
+
+    let like = 0;
+
+    if (song) {
+        like = song.like ?? 0;
+    }
+
     const newLike = status == "like" ? like + 1 : like - 1;
 
     await Song.updateOne({
@@ -130,21 +137,24 @@ export const favorite = async (req: Request, res: Response) => {
     const favoriteSongs = await FavoriteSong.find({
         deleted: false,
         userId: "",
-    });
-    
+    }).lean();
+
     for (const item of favoriteSongs) {
         const song = await Song.findOne({
-           _id: item.songId,
+            _id: item.songId,
             deleted: false,
             status: "active"
-        });
-        item["song"] = song;
+        }).lean();
+        if (song) {
+            (item as any).song = song;
 
-        const singer = await Singer.findOne({
-            _id: song.singerId,
-            deleted: false
-        })
-        item["singer"]=singer;
+            const singer = await Singer.findOne({
+                _id: song.singerId,
+                deleted: false
+            }).lean();
+            
+            (item as any).singer = singer;
+        }
     }
 
     res.render("client/pages/songs/favorite",
@@ -163,13 +173,22 @@ export const listenPatch = async (req: Request, res: Response) => {
         deleted: false,
         status: "active"
     })
-    const newListen = song.listen + 1;
+
+    if (!song) {
+        return res.json({
+            code: 404,
+            message: "Không tìm thấy bài hát"
+        });
+    }
+
+    const currentListen = song.listen ?? 0;
+    const newListen = currentListen + 1;
 
     await Song.updateOne({
         slug: songSlug,
         deleted: false,
         status: "active"
-    },{
+    }, {
         listen: newListen
     })
 

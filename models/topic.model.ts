@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
-import slug from 'mongoose-slug-updater'
+// @ts-ignore
+import slug from 'mongoose-slug-updater';
 
 const topicSchema = new mongoose.Schema({
     title: String,

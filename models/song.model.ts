@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+// @ts-ignore
 import slug from 'mongoose-slug-updater';
 
 mongoose.plugin(slug);

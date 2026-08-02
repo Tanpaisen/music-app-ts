@@ -13,7 +13,7 @@ cloudinary.config({
 
 // Stream upload helper
 let streamUpload = (buffer: Buffer) => {
-  return new Promise((resolve, reject) => {
+  return new Promise<any>((resolve, reject) => {
     const stream = cloudinary.uploader.upload_stream(
       { resource_type: 'auto' },
       (error, result) => {
@@ -27,6 +27,6 @@ let streamUpload = (buffer: Buffer) => {
 
 
 export const uploadToCloudinary = async (buffer: any) => {
-  let result = await streamUpload(buffer) || "";
-  return result["url"];
+  let result = await streamUpload(buffer);
+  return result.url;
 }

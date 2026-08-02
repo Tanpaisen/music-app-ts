@@ -4,6 +4,16 @@ import Singer from "../../models/singer.model";
 import Topic from "../../models/topic.model";
 import { systemConfig } from "../../config/system";
 
+interface SongData {
+  title: any;
+  description: any;
+  singerId: any;
+  topicId: any;
+  status: any;
+  lyrics: any;
+  avatar?: any;
+  audio?: any;
+}
 
 
 //[GET] /admin/topics
@@ -43,7 +53,7 @@ export const createPost = async (req: Request, res: Response) => {
     if(req.body.audio) {
         req.body.audio = req.body.audio[0]
     }
-    const data = {
+    const data: SongData = {
         title: req.body.title,
         avatar: req.body.avatar,
         description: req.body.description,
@@ -85,7 +95,7 @@ export const edit = async (req: Request, res: Response) => {
 export const editPatch = async (req: Request, res: Response) => {
     const id = req.params.id;
 
-    const data = {
+    const data: SongData = {
         title: req.body.title,
         description: req.body.description,
         singerId: req.body.singerId,
@@ -94,10 +104,10 @@ export const editPatch = async (req: Request, res: Response) => {
         lyrics: req.body.lyrics,
     }
 
-    if(req.body.avatar) {
+    if(req.body.avatar[0]) {
         data['avatar'] = req.body.avatar[0]
     }
-    if(req.body.audio) {
+    if(req.body.audio[0]) {
         data['audio'] = req.body.audio[0]
     }
     await Song.updateOne({
