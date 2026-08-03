@@ -84,6 +84,7 @@ const edit = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 });
 exports.edit = edit;
 const editPatch = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a, _b;
     const id = req.params.id;
     const data = {
         title: req.body.title,
@@ -93,10 +94,10 @@ const editPatch = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         status: req.body.status,
         lyrics: req.body.lyrics,
     };
-    if (req.body.avatar[0]) {
+    if (((_a = req.body.avatar) === null || _a === void 0 ? void 0 : _a.length) > 0) {
         data['avatar'] = req.body.avatar[0];
     }
-    if (req.body.audio[0]) {
+    if (((_b = req.body.audio) === null || _b === void 0 ? void 0 : _b.length) > 0) {
         data['audio'] = req.body.audio[0];
     }
     yield song_model_1.default.updateOne({

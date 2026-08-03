@@ -104,10 +104,10 @@ export const editPatch = async (req: Request, res: Response) => {
         lyrics: req.body.lyrics,
     }
 
-    if(req.body.avatar[0]) {
+    if(req.body.avatar?.length > 0) {
         data['avatar'] = req.body.avatar[0]
     }
-    if(req.body.audio[0]) {
+    if(req.body.audio?.length > 0) {
         data['audio'] = req.body.audio[0]
     }
     await Song.updateOne({

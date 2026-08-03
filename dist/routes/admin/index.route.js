@@ -6,11 +6,13 @@ const system_1 = require("../../config/system");
 const topics_route_1 = require("./topics.route");
 const song_route_1 = require("./song.route");
 const upload_route_1 = require("./upload.route");
+const singer_route_1 = require("./singer.route");
 const routeAdmin = (app) => {
     const path = system_1.systemConfig.prefixAdmin;
     app.use(`/${path}/dashboard`, dashboard_route_1.dashboardRouter);
     app.use(`/${path}/topics`, topics_route_1.topicRouter);
     app.use(`/${path}/songs`, song_route_1.songRouter);
     app.use(`/${path}/upload`, upload_route_1.uploadRouter);
+    app.use(`/${path}/singers`, singer_route_1.singerRouter);
 };
 exports.routeAdmin = routeAdmin;
