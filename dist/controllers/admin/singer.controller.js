@@ -12,8 +12,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.index = void 0;
+exports.createPost = exports.create = exports.index = void 0;
 const singer_model_1 = __importDefault(require("../../models/singer.model"));
+const system_1 = require("../../config/system");
 const index = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const singers = yield singer_model_1.default.find({
         deleted: false,
@@ -24,3 +25,21 @@ const index = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     });
 });
 exports.index = index;
+const create = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    res.render("admin/pages/singers/create", {
+        pageTitle: "Thêm mới ca sĩ"
+    });
+});
+exports.create = create;
+const createPost = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { fullName, avatar, status } = req.body;
+    const singer = new singer_model_1.default({
+        fullName: fullName,
+        avatar: avatar,
+        status: status
+    });
+    yield singer.save();
+    const backURL = req.header('Referer') || `/${system_1.systemConfig.prefixAdmin}/singers`;
+    res.redirect(backURL);
+});
+exports.createPost = createPost;
