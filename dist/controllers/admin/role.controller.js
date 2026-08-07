@@ -12,8 +12,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.index = void 0;
+exports.createPost = exports.create = exports.index = void 0;
 const role_model_1 = __importDefault(require("../../models/role.model"));
+const system_1 = require("../../config/system");
 const index = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const roles = yield role_model_1.default.find({ deleted: false });
     res.render("admin/pages/roles/index", {
@@ -22,3 +23,19 @@ const index = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     });
 });
 exports.index = index;
+const create = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    res.render("admin/pages/roles/create", {
+        pageTitle: "Trang tạo nhóm quyền mới",
+    });
+});
+exports.create = create;
+const createPost = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const data = {
+        title: req.body.title,
+        description: req.body.description,
+    };
+    const role = new role_model_1.default(data);
+    yield role.save();
+    res.redirect(`/${system_1.systemConfig.prefixAdmin}/roles`);
+});
+exports.createPost = createPost;

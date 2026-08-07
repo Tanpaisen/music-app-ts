@@ -11,7 +11,7 @@ block main
             // Có thể thêm bộ lọc hoặc tìm kiếm ở đây
             .col-2.text-right
               a.btn.btn-outline-success(
-                href=`${prefixAdmin}/roles/create`
+                href=`/${prefixAdmin}/roles/create`
               ) + Thêm mới
 
         table(
@@ -33,17 +33,15 @@ block main
                   td #{item.title}
                   td !{item.description}
                   td
-                    if(role.permissions.includes("roles_edit"))
-                      a(
-                        class="btn btn-warning btn-sm"
-                        href=`${prefixAdmin}/roles/edit/${item.id}`
-                      ) Sửa
+                    a(
+                      class="btn btn-warning btn-sm"
+                      href=`${prefixAdmin}/roles/edit/${item.id}`
+                    ) Sửa
                     a.btn.btn-sm.btn-secondary(href=`${prefixAdmin}/roles/detail/${item.id}`) Chi tiết
-                    if(role.permissions.includes("roles_delete"))
-                      button.btn.btn-sm.btn-danger(
-                        button-delete
-                        data-id=item.id
-                      ) Xóa
+                    button.btn.btn-sm.btn-danger(
+                      button-delete
+                      data-id=item.id
+                    ) Xóa
             else
               tr
                 td(colspan="4" class="text-center") Chưa có nhóm quyền nào được tạo.
