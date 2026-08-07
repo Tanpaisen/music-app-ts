@@ -39,5 +39,6 @@ const controller = __importStar(require("../../controllers/admin/role.controller
 const router = (0, express_1.Router)();
 router.get("/", controller.index);
 router.get("/create", controller.create);
+router.get("/permissions", controller.permissions);
 router.post("/create", controller.createPost);
 exports.roleRouter = router;
