@@ -4,6 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = __importDefault(require("mongoose"));
+const role_model_1 = __importDefault(require("./role.model"));
 const accountShema = new mongoose_1.default.Schema({
     fullname: String,
     email: String,
@@ -14,7 +15,10 @@ const accountShema = new mongoose_1.default.Schema({
     },
     phone: String,
     avatar: String,
-    role_id: String,
+    role_id: {
+        type: String,
+        ref: role_model_1.default
+    },
     status: String,
     deleted: {
         type: Boolean,

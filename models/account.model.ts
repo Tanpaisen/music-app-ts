@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import Role from "./role.model";
 
 const accountShema = new mongoose.Schema({
     fullname: String,
@@ -10,7 +11,10 @@ const accountShema = new mongoose.Schema({
     },
     phone: String,
     avatar: String,
-    role_id: String,
+    role_id: {
+        type: String,
+        ref: Role
+    },
     status: String,
     deleted: {
         type: Boolean,

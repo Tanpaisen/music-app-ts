@@ -19,11 +19,13 @@
     "add-build"
   ],
   "dependencies": {
+    "@types/md5": "^2.3.6",
     "body-parser": "^2.3.0",
     "cloudinary": "^2.10.0",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "fs-extra": "^11.4.0",
+    "md5": "^2.3.0",
     "meilisearch": "^0.33.0",
     "method-override": "^3.0.0",
     "mongoose": "^9.7.4",
