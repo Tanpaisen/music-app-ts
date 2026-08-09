@@ -20,6 +20,7 @@
   ],
   "dependencies": {
     "@types/md5": "^2.3.6",
+    "axios": "^1.19.0",
     "body-parser": "^2.3.0",
     "cloudinary": "^2.10.0",
     "dotenv": "^17.4.2",

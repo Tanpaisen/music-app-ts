@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createPost = exports.permissions = exports.create = exports.index = void 0;
+exports.createPost = exports.permissionsPatch = exports.permissions = exports.create = exports.index = void 0;
 const role_model_1 = __importDefault(require("../../models/role.model"));
 const system_1 = require("../../config/system");
 const index = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -39,6 +39,21 @@ const permissions = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     });
 });
 exports.permissions = permissions;
+const permissionsPatch = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const permissions = req.body.permissions;
+    for (const permission of permissions) {
+        const roleID = permission.id;
+        const permissionList = permission.permissions;
+        yield role_model_1.default.updateOne({ _id: roleID }, {
+            $set: { permissions: permissionList }
+        });
+    }
+    res.json({
+        location: `/${system_1.systemConfig.prefixAdmin}/roles/permissions`,
+        permissions: permissions
+    });
+});
+exports.permissionsPatch = permissionsPatch;
 const createPost = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const data = {
         title: req.body.title,

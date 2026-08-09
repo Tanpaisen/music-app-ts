@@ -28,68 +28,68 @@ block main
                   input(type="text" value=item.id)
             
 
-          //- Nhóm: Danh mục sản phẩm
+          //- Nhóm: Quản lý chủ đề
           tr
             td(colspan="3")
-              b Danh mục sản phẩm
+              b Quản lý chủ đề
           
-          tr(data-name="products-category_view")
+          tr(data-name="topics_view")
             td Xem
             each item in data
               td(class="text-center")
                 input(type="checkbox")
           
-          tr(data-name="products-category_create")
+          tr(data-name="topics_create")
             td Thêm mới
             each item in data
               td(class="text-center")
                 input(type="checkbox")
           
-          tr(data-name="products-category_edit")
+          tr(data-name="topics_edit")
             td Chỉnh sửa
             each item in data
               td(class="text-center")
                 input(type="checkbox")
 
-          tr(data-name="products-category_delete")
+          tr(data-name="topics_delete")
             td Xóa
             each item in data
               td(class="text-center")
                 input(type="checkbox")
 
-          //- Nhóm: Danh sách sản phẩm
+          //- Nhóm: Quản lý bài hát
           tr
             td(colspan="3")
-              b Danh sách sản phẩm
+              b Quản lý bài hát
           
-          tr(data-name="products_view")
+          tr(data-name="songs_view")
             td Xem
             each item in data
               td(class="text-center")
                 input(type="checkbox")
           
-          tr(data-name="products_create")
+          tr(data-name="songs_create")
             td Thêm mới
             each item in data
               td(class="text-center")
                 input(type="checkbox")
           
-          tr(data-name="products_edit")
+          tr(data-name="songs_edit")
             td Chỉnh sửa
             each item in data
               td(class="text-center")
                 input(type="checkbox")
 
-          tr(data-name="products_delete")
+          tr(data-name="songs_delete")
             td Xóa
             each item in data
               td(class="text-center")
                 input(type="checkbox")
 
-          //- Nhóm: Quản lý nhóm quyền
+          //- Nhóm: Quản lý phân quyền
           tr
             td(colspan="3")
-              b Quản lý nhóm quyền
+              b Quản lý phân quyền
           
           tr(data-name="roles_view")
             td Xem
@@ -131,10 +131,10 @@ block main
               td(class="text-center")
                 input(type="checkbox")
 
-          //- Nhóm: Tài khoản
+          //- Nhóm: Tài khoản Admin
           tr
             td(colspan="3")
-              b Tài khoản
+              b Tài khoản Admin
           
           tr(data-name="accounts_view")
             td Xem
@@ -188,58 +188,30 @@ block main
               td(class="text-center")
                 input(type="checkbox")
 
-          //- Nhóm: Danh mục bài viết
+          //- Nhóm: Quản lý ca sĩ
           tr
             td(colspan="3")
-              b Danh mục bài viết
+              b Quản lý ca sĩ
           
-          tr(data-name="blogs-category_view")
+          tr(data-name="singers_view")
             td Xem
             each item in data
               td(class="text-center")
                 input(type="checkbox")
           
-          tr(data-name="blogs-category_create")
+          tr(data-name="singers_create")
             td Thêm mới
             each item in data
               td(class="text-center")
                 input(type="checkbox")
           
-          tr(data-name="blogs-category_edit")
+          tr(data-name="singers_edit")
             td Chỉnh sửa
             each item in data
               td(class="text-center")
                 input(type="checkbox")
           
-          tr(data-name="blogs-category_delete")
-            td Xóa
-            each item in data
-              td(class="text-center")
-                input(type="checkbox")
-          //- Nhóm: Bài viết
-          tr
-            td(colspan="3")
-              b Bài viết
-          
-          tr(data-name="blogs_view")
-            td Xem
-            each item in data
-              td(class="text-center")
-                input(type="checkbox")
-          
-          tr(data-name="blogs_create")
-            td Thêm mới
-            each item in data
-              td(class="text-center")
-                input(type="checkbox")
-          
-          tr(data-name="blogs_edit")
-            td Chỉnh sửa
-            each item in data
-              td(class="text-center")
-                input(type="checkbox")
-          
-          tr(data-name="blogs_delete")
+          tr(data-name="singers_delete")
             td Xóa
             each item in data
               td(class="text-center")
@@ -260,17 +232,16 @@ block main
             each item in data
               td(class="text-center")
                 input(type="checkbox")
-    
-      form(
-        id="form-change-permissions"
-        method="POST"
-        action=`${prefixAdmin}/roles/permissions?_method=PATCH`
-      )
-        div(class="form-group")
-          input(
-            type="text"
-            class="form-control"
-            name="permissions"
-            class="d-none"
-          )
+          
+          tr(data-name="settings-general_delete")
+            td Xóa
+            each item in data
+              td(class="text-center")
+                input(type="checkbox")
+          
+          tr(data-name="settings-general_delete")
+            td Xóa
+            each item in data
+              td(class="text-center")
+                input(type="checkbox")
       script(src="/admin/js/role.js")
