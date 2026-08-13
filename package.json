@@ -23,8 +23,10 @@
     "axios": "^1.19.0",
     "body-parser": "^2.3.0",
     "cloudinary": "^2.10.0",
+    "cookie-parser": "^1.4.7",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
+    "express-session": "^1.19.0",
     "fs-extra": "^11.4.0",
     "md5": "^2.3.0",
     "meilisearch": "^0.33.0",
@@ -40,7 +42,9 @@
     "unidecode": "^1.1.0"
   },
   "devDependencies": {
+    "@types/cookie-parser": "^1.4.10",
     "@types/express": "^5.0.6",
+    "@types/express-session": "^1.19.0",
     "@types/method-override": "^3.0.0",
     "@types/multer": "^2.2.0",
     "@types/node": "^26.1.1",

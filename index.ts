@@ -9,6 +9,8 @@ import path from "path";
 import { systemConfig } from "./config/system";
 import bodyParser from "body-parser";
 import methodOverride from 'method-override'
+import cookieParser from 'cookie-parser'
+import session from 'express-session'
 
 database.connect();
 
@@ -32,6 +34,17 @@ app.use('/tinymce', express.static(path.join(__dirname, 'node_modules', 'tinymce
 // App Local Variables
 app.locals.prefixAdmin = systemConfig.prefixAdmin;
 
+app.use(cookieParser('tanpaisen'));
+app.use(
+  session({
+    secret: 'tanpaisen',
+    cookie: { maxAge: 60000 },
+    resave: false,
+    saveUninitialized: true,
+  })
+);
+
+
 routeMain(app);
 routeAdmin(app);
 
@@ -39,6 +52,8 @@ const PORT: string | number = process.env.PORT || 3000;
 
 //meilisearch
 // syncSongsToMeili()
+
+
 
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
