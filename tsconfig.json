@@ -5,5 +5,10 @@
         "target": "es6",
         "module": "commonjs",// commonjs la tieu chuan trong nodejs de dung voi cac module
         "esModuleInterop": true // dung de import cac module cua nodejs vao typescript thay vi require
-    }
+    },
+    "exclude": [
+        "node_modules",
+        "frontend",
+        "dist"
+    ]
 }

@@ -6,6 +6,8 @@ import { homeRouter } from '../client/home.route'
 
 export const routeMain = (app: Express) => {
     app.use('/', homeRouter)
+
+    app.use('/home', homeRouter)
     
     app.use('/topics', topicRouter)
 
