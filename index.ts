@@ -47,6 +47,11 @@ app.use(
 
 routeMain(app);
 routeAdmin(app);
+app.use( (req: Request, res: Response) => {
+  res.status(404).render('errors/404', {
+    pageTitle: "Error",
+  });
+});
 
 const PORT: string | number = process.env.PORT || 3000;
 

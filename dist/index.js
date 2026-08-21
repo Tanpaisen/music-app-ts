@@ -67,6 +67,11 @@ app.use((0, express_session_1.default)({
 }));
 (0, index_route_1.routeMain)(app);
 (0, index_route_2.routeAdmin)(app);
+app.use((req, res) => {
+    res.status(404).render('errors/404', {
+        pageTitle: "Error",
+    });
+});
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
