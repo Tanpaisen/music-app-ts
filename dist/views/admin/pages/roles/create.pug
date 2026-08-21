@@ -1,6 +1,7 @@
 extends ../../layouts/default.pug
 
 block main
+  if(role.permissions.includes('roles_create'))
     h1.mb-4 #{pageTitle}
     .card.mb-3
       .card-header Thông tin nhóm quyền
@@ -26,3 +27,7 @@ block main
 
           .form-group.mb-2 
             button.btn.btn-primary(type="submit") Tạo mới
+  else
+    .alert.alert-warning
+        p Tài khoản của bạn hiện chưa được cấp quyền truy cập. 
+        p Vui lòng liên hệ quản trị viên để khôi phục dữ liệu nhóm quyền.

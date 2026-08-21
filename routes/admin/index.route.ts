@@ -7,21 +7,25 @@ import { uploadRouter } from './upload.route';
 import { singerRouter } from './singer.route';
 import { roleRouter } from './role.route';
 import { accountRouter } from './account.route';
+import { authRouter } from './auth.route';
+import * as authMiddleware  from '../../middleware/authentication.middleware'
 
 export const routeAdmin = (app: Express) => {
     const path = systemConfig.prefixAdmin;
 
-    app.use(`/${path}/dashboard`, dashboardRouter)
+    app.use(`/${path}/dashboard`, authMiddleware.requireAuth, dashboardRouter)
 
-    app.use(`/${path}/topics`, topicRouter)
+    app.use(`/${path}/topics`, authMiddleware.requireAuth, topicRouter)
 
-    app.use(`/${path}/songs`, songRouter)
+    app.use(`/${path}/songs`, authMiddleware.requireAuth, songRouter)
 
-    app.use(`/${path}/upload`, uploadRouter)
+    app.use(`/${path}/upload`, authMiddleware.requireAuth, uploadRouter)
 
-    app.use(`/${path}/singers`, singerRouter)
+    app.use(`/${path}/singers`, authMiddleware.requireAuth, singerRouter)
 
-    app.use(`/${path}/accounts`, accountRouter)
+    app.use(`/${path}/accounts`, authMiddleware.requireAuth, accountRouter)
 
-    app.use(`/${path}/roles`, roleRouter)
+    app.use(`/${path}/roles`, authMiddleware.requireAuth, roleRouter)
+
+    app.use(`/${path}/auth`, authRouter)
 }

@@ -1,18 +1,20 @@
 extends ../../layouts/default.pug
 
 block main
+  if(role.permissions.includes('roles_edit'))
     h1.mb-4 #{pageTitle}
     
-    .card.mb-3
+    .card.mb-3q 
       .card-header Danh sách nhóm quyền
       .card-body
         .row.mb-3
           .col-10
             // Có thể thêm bộ lọc hoặc tìm kiếm ở đây
             .col-2.text-right
-              a.btn.btn-outline-success(
-                href=`/${prefixAdmin}/roles/create`
-              ) + Thêm mới
+              if(role.permissions.includes('roles_create'))
+                a.btn.btn-outline-success(
+                  href=`/${prefixAdmin}/roles/create`
+                ) + Thêm mới
 
         table(
           class="table table-hover table-sm"
@@ -33,15 +35,17 @@ block main
                   td #{item.title}
                   td !{item.description}
                   td
-                    a(
-                      class="btn btn-warning btn-sm"
-                      href=`${prefixAdmin}/roles/edit/${item.id}`
-                    ) Sửa
-                    a.btn.btn-sm.btn-secondary(href=`${prefixAdmin}/roles/detail/${item.id}`) Chi tiết
-                    button.btn.btn-sm.btn-danger(
-                      button-delete
-                      data-id=item.id
-                    ) Xóa
+                    if(role.permissions.includes('roles_edit')) 
+                      a(
+                        class="btn btn-warning btn-sm"
+                        href=`${prefixAdmin}/roles/edit/${item.id}`
+                      ) Sửa
+                    if(role.permissions.includes('roles_delete')) 
+                      a.btn.btn-sm.btn-secondary(href=`${prefixAdmin}/roles/detail/${item.id}`) Chi tiết
+                      button.btn.btn-sm.btn-danger(
+                        button-delete
+                        data-id=item.id
+                      ) Xóa
             else
               tr
                 td(colspan="4" class="text-center") Chưa có nhóm quyền nào được tạo.
@@ -52,3 +56,7 @@ block main
         id="form-delete"
         data-path=`${prefixAdmin}/roles/deleteOne`
       )
+  else
+    .alert.alert-warning
+        p Tài khoản của bạn hiện chưa được cấp quyền truy cập. 
+        p Vui lòng liên hệ quản trị viên để khôi phục dữ liệu nhóm quyền.

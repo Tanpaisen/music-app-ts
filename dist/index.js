@@ -46,6 +46,8 @@ const path_1 = __importDefault(require("path"));
 const system_1 = require("./config/system");
 const body_parser_1 = __importDefault(require("body-parser"));
 const method_override_1 = __importDefault(require("method-override"));
+const cookie_parser_1 = __importDefault(require("cookie-parser"));
+const express_session_1 = __importDefault(require("express-session"));
 database.connect();
 const app = (0, express_1.default)();
 app.set('views', `${__dirname}/views`);
@@ -56,8 +58,20 @@ app.use(express_1.default.json());
 app.use(body_parser_1.default.urlencoded({ extended: false }));
 app.use('/tinymce', express_1.default.static(path_1.default.join(__dirname, 'node_modules', 'tinymce')));
 app.locals.prefixAdmin = system_1.systemConfig.prefixAdmin;
+app.use((0, cookie_parser_1.default)('tanpaisen'));
+app.use((0, express_session_1.default)({
+    secret: 'tanpaisen',
+    cookie: { maxAge: 60000 },
+    resave: false,
+    saveUninitialized: true,
+}));
 (0, index_route_1.routeMain)(app);
 (0, index_route_2.routeAdmin)(app);
+app.use((req, res) => {
+    res.status(404).render('errors/404', {
+        pageTitle: "Error",
+    });
+});
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
