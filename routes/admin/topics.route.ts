@@ -25,7 +25,7 @@ router.get("/create", controller.create);
 router.get("/edit/:id", controller.edit);
 
 router.delete("/delete/:id", 
-    // authentication.checkPermission('topics_delete'),
+    authentication.checkPermission('topics_delete'),
     controller.deleteOne
 );
 

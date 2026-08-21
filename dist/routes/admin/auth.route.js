@@ -39,5 +39,6 @@ const controller = __importStar(require("../../controllers/admin/auth.controller
 const validate = __importStar(require("../../validates/admin/auth.validate"));
 const router = (0, express_1.Router)();
 router.get("/login", controller.login);
+router.get("/logout", controller.logout);
 router.post("/login", validate.loginPost, controller.loginPost);
 exports.authRouter = router;

@@ -49,7 +49,7 @@ router.get("/detail/:id", controller.detail);
 router.patch("/change-status/:status/:id", authentication.checkPermission('topics_edit'), controller.changeStatus);
 router.get("/create", controller.create);
 router.get("/edit/:id", controller.edit);
-router.delete("/delete/:id", controller.deleteOne);
+router.delete("/delete/:id", authentication.checkPermission('topics_delete'), controller.deleteOne);
 router.patch("/edit/:id", authentication.checkPermission('topics_edit'), upload.single('avatar'), uploadCloud.uploadSingle, controller.editPatch);
 router.post("/create", authentication.checkPermission('topics_create'), upload.single('avatar'), uploadCloud.uploadSingle, controller.createPost);
 exports.topicRouter = router;

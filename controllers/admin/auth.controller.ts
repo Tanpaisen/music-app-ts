@@ -2,6 +2,8 @@ import { Request, Response } from "express";
 import Account from "../../models/account.model";
 import md5 from "md5";
 
+import { systemConfig } from '../../config/system'
+
 //[GET] /admin/auth/login
 export const login = async (req: Request, res: Response) => {
 
@@ -9,6 +11,13 @@ export const login = async (req: Request, res: Response) => {
         pageTitle: "Đăng nhập"
     });
 }
+
+//[GET] /admin/auth/logout
+export const logout = async (req: Request, res: Response) => {
+    res.clearCookie('token')
+    res.redirect(`/${systemConfig.prefixAdmin}/auth/login`)
+}
+
 //[POST] /admin/auth/login
 export const loginPost = async (req: Request, res: Response) => {
     req.body.password = md5(req.body.password)

@@ -12,15 +12,21 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.loginPost = exports.login = void 0;
+exports.loginPost = exports.logout = exports.login = void 0;
 const account_model_1 = __importDefault(require("../../models/account.model"));
 const md5_1 = __importDefault(require("md5"));
+const system_1 = require("../../config/system");
 const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     res.render("admin/pages/auth/login", {
         pageTitle: "Đăng nhập"
     });
 });
 exports.login = login;
+const logout = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    res.clearCookie('token');
+    res.redirect(`/${system_1.systemConfig.prefixAdmin}/auth/login`);
+});
+exports.logout = logout;
 const loginPost = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     req.body.password = (0, md5_1.default)(req.body.password);
     const { email, password } = req.body;
