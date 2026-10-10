@@ -1,9 +1,12 @@
 
 /** @type {import('next').NextConfig} */
 
-const BACKEND_URL =
+const BACKEND_URL = (
   process.env.API_BASE_URL ||
-  "http://localhost:3001";
+  "http://127.0.0.1:3001"
+).replace(/\/$/, "");
+
+console.log("[Next.js] API Backend:", BACKEND_URL);
 
 const nextConfig = {
   images: {
@@ -18,6 +21,10 @@ const nextConfig = {
       {
         source: "/search/suggest",
         destination: `${BACKEND_URL}/search/suggest`,
+      },
+      {
+        source: "/api/auth/:path*",
+        destination: `${BACKEND_URL}/api/auth/:path*`,
       },
     ];
   },

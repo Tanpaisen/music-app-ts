@@ -1,9 +1,9 @@
-import { Metadata } from "next";
+import type { Metadata } from "next";
 import RegisterForm from "@/components/auth/RegisterForm";
 
 export const metadata: Metadata = {
-  title: "Đăng ký · VibeFlow",
-  description: "Tạo tài khoản VibeFlow miễn phí để nghe nhạc không giới hạn",
+  title: "Đăng ký | Tmus",
+  description: "Tạo tài khoản Tmus để tận hưởng âm nhạc theo cách của bạn.",
 };
 
 export default function RegisterPage() {

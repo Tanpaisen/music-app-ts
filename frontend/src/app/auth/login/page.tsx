@@ -1,9 +1,9 @@
-import { Metadata } from "next";
+import type { Metadata } from "next";
 import LoginForm from "@/components/auth/LoginForm";
 
 export const metadata: Metadata = {
-  title: "Đăng nhập",
-  description: "Đăng nhập vào Tmu để nghe nhạc không giới hạn",
+  title: "Đăng nhập | Tmus",
+  description: "Đăng nhập Tmus và tiếp tục hành trình âm nhạc của bạn.",
 };
 
 export default function LoginPage() {
