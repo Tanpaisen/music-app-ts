@@ -32,15 +32,26 @@ var __importStar = (this && this.__importStar) || (function () {
         return result;
     };
 })();
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
+var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
 const database = __importStar(require("./config/database"));
 const index_route_1 = require("./routes/client/index.route");
+const meilisearch_service_1 = require("./services/meilisearch.service");
 const index_route_2 = require("./routes/admin/index.route");
 const path_1 = __importDefault(require("path"));
 const system_1 = require("./config/system");
@@ -48,8 +59,15 @@ const body_parser_1 = __importDefault(require("body-parser"));
 const method_override_1 = __importDefault(require("method-override"));
 const cookie_parser_1 = __importDefault(require("cookie-parser"));
 const express_session_1 = __importDefault(require("express-session"));
-database.connect();
+const cors_1 = __importDefault(require("cors"));
 const app = (0, express_1.default)();
+app.use((0, cors_1.default)({
+    origin: [
+        "http://localhost:3001",
+        (_a = process.env.FRONTEND_URL) !== null && _a !== void 0 ? _a : "",
+    ],
+    credentials: true,
+}));
 app.set('views', `${__dirname}/views`);
 app.set('view engine', 'pug');
 app.use(express_1.default.static(__dirname + '/public'));
@@ -65,6 +83,12 @@ app.use((0, express_session_1.default)({
     resave: false,
     saveUninitialized: true,
 }));
+app.get("/health", (_req, res) => {
+    res.status(200).json({
+        status: "ok",
+        service: "express-backend"
+    });
+});
 (0, index_route_1.routeMain)(app);
 (0, index_route_2.routeAdmin)(app);
 app.use((req, res) => {
@@ -72,7 +96,20 @@ app.use((req, res) => {
         pageTitle: "Error",
     });
 });
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+const PORT = Number(process.env.PORT) || 3001;
+const startServer = () => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        yield database.connect();
+        app.listen(PORT, "0.0.0.0", () => {
+            console.log(`Server is running on port ${PORT}`);
+        });
+        (0, meilisearch_service_1.syncSongsToMeili)().catch((error) => {
+            console.error("Meilisearch sync failed:", error);
+        });
+    }
+    catch (error) {
+        console.error("Server startup failed:", error);
+        process.exit(1);
+    }
 });
+startServer();

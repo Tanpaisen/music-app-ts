@@ -24,3 +24,15 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+
+/* ===== Fix browser autofill override màu nền ===== */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px #0c0c18 inset !important;
+  -webkit-text-fill-color: #cccccc !important;
+  caret-color: #cccccc;
+  transition: background-color 9999s ease-in-out 0s;
+}

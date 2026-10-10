@@ -8,71 +8,63 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.type = void 0;
-const song_model_1 = __importDefault(require("../../models/song.model"));
-const singer_model_1 = __importDefault(require("../../models/singer.model"));
-const unidecode_1 = __importDefault(require("unidecode"));
+const meilisearch_service_1 = require("../../services/meilisearch.service");
 var typeSearch;
 (function (typeSearch) {
     typeSearch["RESULT"] = "result";
     typeSearch["SUGGEST"] = "suggest";
 })(typeSearch || (typeSearch = {}));
 const type = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const type = req.params.typeSearch;
-    const keyword = `${req.query.keyword}`;
-    const songDetail = [];
-    if (keyword) {
-        const keywordRegex = new RegExp(keyword, 'i');
-        const unidecodeKeyword = (0, unidecode_1.default)(keyword).trim();
-        const keywordSlug = unidecodeKeyword.replace(/\s+/g, '-');
-        const slugRegex = new RegExp(keywordSlug, 'i');
-        const songs = yield song_model_1.default.find({
-            deleted: false,
-            status: "active",
-            $or: [
-                { title: keywordRegex },
-                { slug: slugRegex }
-            ]
-        }).lean();
-        for (const item of songs) {
-            const singer = yield singer_model_1.default.findOne({
-                _id: item.singerId,
-                deleted: false,
-                status: "active"
+    try {
+        const type = req.params.typeSearch;
+        const keyword = `${req.query.keyword || ""}`.trim();
+        let songDetail = [];
+        if (keyword) {
+            const songIndex = (0, meilisearch_service_1.getSongIndex)();
+            const searchResult = yield songIndex.search(keyword, {
+                filter: ['deleted = false', 'status = "active"'],
+                limit: 20,
             });
-            item.singer = singer;
-            songDetail.push({
-                _id: item._id,
-                avatar: item.avatar,
-                title: item.title,
-                like: item.like,
-                slug: item.slug,
+            songDetail = searchResult.hits.map((hit) => { var _a, _b; return ({
+                _id: hit.id,
+                avatar: hit.avatar,
+                title: hit.title,
+                like: (_a = hit.like) !== null && _a !== void 0 ? _a : 0,
+                listen: (_b = hit.listen) !== null && _b !== void 0 ? _b : 0,
+                slug: hit.slug,
                 singer: {
-                    fullName: singer === null || singer === void 0 ? void 0 : singer.fullName
-                },
-            });
+                    fullName: hit.fullName || ""
+                }
+            }); });
         }
         switch (type) {
             case typeSearch.RESULT:
-                res.render("client/pages/search/result", {
+                return res.render("client/pages/search/result", {
                     pageTitle: `Kết quả tìm kiếm: ${keyword}`,
-                    songs: songs
+                    keyword: keyword,
+                    songs: songDetail
                 });
-                break;
             case typeSearch.SUGGEST:
-                res.json({
+                return res.json({
                     code: 200,
                     message: "Gợi ý tìm kiếm",
                     songDetail: songDetail
                 });
-                break;
             default:
-                break;
+                return res.status(400).json({
+                    code: 400,
+                    message: "Loại tìm kiếm không hợp lệ"
+                });
         }
+    }
+    catch (error) {
+        console.error("❌ Lỗi controller search:", error);
+        return res.status(500).json({
+            code: 500,
+            message: "Lỗi hệ thống khi tìm kiếm"
+        });
     }
 });
 exports.type = type;

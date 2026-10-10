@@ -3,6 +3,7 @@ import Song from "../../models/song.model";
 import Topic from "../../models/topic.model";
 import Singer from "../../models/singer.model";
 import FavoriteSong from "../../models/favorite.song.model";
+import { songService } from "../../services/song.service";
 
 //[GET] /songs/:songSlug
 export const list = async (req: Request, res: Response) => {
@@ -40,38 +41,25 @@ export const list = async (req: Request, res: Response) => {
 
 //[GET] /songs/detail/:songSlug
 export const detail = async (req: Request, res: Response) => {
-    const slug = req.params.songSlug;
-    if (!slug) {
-        return res.status(400).json({ message: "Missing songSlug parameter" });
+  try {
+    const { songSlug } = req.params;
+    if (!songSlug) {
+      return res.status(400).json({ code: 400, message: "Thiếu songSlug" });
     }
 
-    const song = await Song.findOne({
-        slug: slug,
-        deleted: false
-    }).populate("topicId")
-        .populate("singerId", "fullName");
-
-    if (!song) {
-        return res.status(404).json({ message: "Song not found" });
+    const data = await songService.getSongDetail(songSlug.toString());
+    if (!data) {
+      return res.status(404).json({ code: 404, message: "Không tìm thấy bài hát" });
     }
 
-    const topic = await Topic.findById(song.topicId);
+    res.json({ code: 200, message: "Thành công", data });
+  } catch (error) {
+    console.error("[song.controller/detail]", error);
+    res.status(500).json({ code: 500, message: "Lỗi máy chủ" });
+  }
+};
 
-    const singer = await Singer.findById(song.singerId).select("fullName");
 
-    const favorite = await FavoriteSong.findOne({
-        songId: song.id,
-        userId: "",
-    });
-    (song as any).favorite = favorite;
-
-    res.render("client/pages/songs/detail", {
-        pageTitle: "Chi tiết bài hát",
-        song: song,
-        singer: singer,
-        topic: topic
-    });
-}
 
 //[PATCH] /songs/like/:status/:songId
 export const like = async (req: Request, res: Response) => {

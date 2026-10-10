@@ -1,84 +1,69 @@
 import { Request, Response } from "express";
-import Song from "../../models/song.model";
-import Singer from "../../models/singer.model";
-import unidecode from "unidecode"
-import { getSongIndex } from "../../services/meilisearch.service"
+import { getSongIndex } from "../../services/meilisearch.service";
 
 enum typeSearch {
     RESULT = "result",
     SUGGEST = "suggest"
 }
 
-//[GET] /search/result
+// [GET] /search/:typeSearch
 export const type = async (req: Request, res: Response) => {
+    try {
+        const type = req.params.typeSearch;
+        const keyword: string = `${req.query.keyword || ""}`.trim();
 
-    const type = req.params.typeSearch;
-    const keyword: string = `${req.query.keyword}`;
+        let songDetail: any[] = [];
 
-    const songDetail = [];
-    if (keyword) {
-        const keywordRegex = new RegExp(keyword, 'i');
-        const unidecodeKeyword = unidecode(keyword).trim()
-        const keywordSlug = unidecodeKeyword.replace(/\s+/g, '-')
-        const slugRegex = new RegExp(keywordSlug, 'i')
+        if (keyword) {
+            const songIndex = getSongIndex();
 
-        const songs = await Song.find({
-            deleted: false,
-            status: "active",
-            $or: [
-                { title: keywordRegex },
-                { slug: slugRegex }
-            ]
-        }).lean();
-
-        for (const item of songs) {
-            const singer = await Singer.findOne({
-                _id: item.singerId,
-                deleted: false,
-                status: "active"
+            // 1. Tìm kiếm trực tiếp qua Meilisearch (Hỗ trợ tiếng Việt, gõ sai từ, gõ không dấu...)
+            const searchResult = await songIndex.search(keyword, {
+                filter: ['deleted = false', 'status = "active"'],
+                limit: 20,
             });
-            (item as any).singer = singer;
 
-            songDetail.push({
-                _id: item._id,
-                avatar: item.avatar,
-                title: item.title,
-                like: item.like,
-                slug: item.slug,
+            // 2. Format lại dữ liệu từ hits cho đồng nhất với View Pug & API JSON
+            songDetail = searchResult.hits.map((hit: any) => ({
+                _id: hit.id,
+                avatar: hit.avatar,
+                title: hit.title,
+                like: hit.like ?? 0,
+                listen: hit.listen ?? 0,
+                slug: hit.slug,
                 singer: {
-                    fullName: singer?.fullName
-                },
-            })
+                    fullName: hit.fullName || ""
+                }
+            }));
         }
 
-        // Tìm kiếm tức thì qua Meilisearch
-        // 1. Gọi hàm .search() của songIndex
-
-        // const songIndex = getSongIndex();
-        // const searchResult = await songIndex.search(keyword, {
-        //     filter: ['deleted = false', 'status = "active"'],
-        //     limit: 20,
-        // });
-
-        // songs = searchResult.hits;
+        // 3. Trả về kết quả tùy thuộc vào endpoint (RESULT render giao diện, SUGGEST trả JSON)
         switch (type) {
             case typeSearch.RESULT:
-                res.render("client/pages/search/result", {
+                return res.render("client/pages/search/result", {
                     pageTitle: `Kết quả tìm kiếm: ${keyword}`,
-                    songs: songs
+                    keyword: keyword,
+                    songs: songDetail
                 });
-                break;
+
             case typeSearch.SUGGEST:
-                res.json({
+                return res.json({
                     code: 200,
                     message: "Gợi ý tìm kiếm",
                     songDetail: songDetail
-                })
-                break;
+                });
+
             default:
-                break;
+                return res.status(400).json({
+                    code: 400,
+                    message: "Loại tìm kiếm không hợp lệ"
+                });
         }
+    } catch (error) {
+        console.error("❌ Lỗi controller search:", error);
+        return res.status(500).json({
+            code: 500,
+            message: "Lỗi hệ thống khi tìm kiếm"
+        });
     }
-
-
-}
+};

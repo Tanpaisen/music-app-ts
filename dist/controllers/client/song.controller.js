@@ -17,6 +17,7 @@ const song_model_1 = __importDefault(require("../../models/song.model"));
 const topic_model_1 = __importDefault(require("../../models/topic.model"));
 const singer_model_1 = __importDefault(require("../../models/singer.model"));
 const favorite_song_model_1 = __importDefault(require("../../models/favorite.song.model"));
+const song_service_1 = require("../../services/song.service");
 const list = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const slug = req.params.songSlug;
     if (!slug) {
@@ -44,31 +45,21 @@ const list = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 });
 exports.list = list;
 const detail = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const slug = req.params.songSlug;
-    if (!slug) {
-        return res.status(400).json({ message: "Missing songSlug parameter" });
+    try {
+        const { songSlug } = req.params;
+        if (!songSlug) {
+            return res.status(400).json({ code: 400, message: "Thiếu songSlug" });
+        }
+        const data = yield song_service_1.songService.getSongDetail(songSlug.toString());
+        if (!data) {
+            return res.status(404).json({ code: 404, message: "Không tìm thấy bài hát" });
+        }
+        res.json({ code: 200, message: "Thành công", data });
     }
-    const song = yield song_model_1.default.findOne({
-        slug: slug,
-        deleted: false
-    }).populate("topicId")
-        .populate("singerId", "fullName");
-    if (!song) {
-        return res.status(404).json({ message: "Song not found" });
+    catch (error) {
+        console.error("[song.controller/detail]", error);
+        res.status(500).json({ code: 500, message: "Lỗi máy chủ" });
     }
-    const topic = yield topic_model_1.default.findById(song.topicId);
-    const singer = yield singer_model_1.default.findById(song.singerId).select("fullName");
-    const favorite = yield favorite_song_model_1.default.findOne({
-        songId: song.id,
-        userId: "",
-    });
-    song.favorite = favorite;
-    res.render("client/pages/songs/detail", {
-        pageTitle: "Chi tiết bài hát",
-        song: song,
-        singer: singer,
-        topic: topic
-    });
 });
 exports.detail = detail;
 const like = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
