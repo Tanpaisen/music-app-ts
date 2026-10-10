@@ -12,6 +12,8 @@ import bodyParser from "body-parser";
 import methodOverride from 'method-override';
 import cookieParser from 'cookie-parser';
 import session from 'express-session';
+import { createClient } from "redis";
+import { RedisStore } from "connect-redis";
 import cors from "cors";
 
 const app: Express = express();
@@ -41,14 +43,7 @@ app.use('/tinymce', express.static(path.join(__dirname, 'node_modules', 'tinymce
 app.locals.prefixAdmin = systemConfig.prefixAdmin;
 
 app.use(cookieParser('tanpaisen'));
-app.use(
-  session({
-    secret: 'tanpaisen',
-    cookie: { maxAge: 60000 },
-    resave: false,
-    saveUninitialized: true,
-  })
-);
+
 
 app.get("/health", (_req: Request, res: Response) => {
   res.status(200).json({
@@ -57,21 +52,80 @@ app.get("/health", (_req: Request, res: Response) => {
   });
 });
 
-routeMain(app);
-routeAdmin(app);
+const configureSession = async () => {
+  const redisUrl = process.env.REDIS_URL;
+  const isProduction = process.env.NODE_ENV === "production";
 
-app.use((req: Request, res: Response) => {
-  res.status(404).render('errors/404', {
-    pageTitle: "Error",
-  });
-});
+  const sessionSecret = process.env.SESSION_SECRET;
+
+  if (isProduction && !sessionSecret) {
+    throw new Error("Missing SESSION_SECRET");
+  }
+
+  let store: session.Store | undefined;
+
+  if (redisUrl) {
+    const redisClient = createClient({
+      url: redisUrl,
+    });
+
+    redisClient.on("error", (error) => {
+      console.error("[Redis] Error:", error);
+    });
+
+    await redisClient.connect();
+
+    console.log("[Redis] Connected successfully");
+
+    store = new RedisStore({
+      client: redisClient,
+      prefix: "music:sess:",
+    });
+  } else if (isProduction) {
+    throw new Error("Missing REDIS_URL");
+  } else {
+    console.log("[Session] Using local MemoryStore");
+  }
+
+  if (isProduction) {
+    app.set("trust proxy", 1);
+  }
+
+  app.use(
+    session({
+      store,
+      name: "music.sid",
+      secret: sessionSecret || "local-dev-only-secret",
+      resave: false,
+      saveUninitialized: false,
+      cookie: {
+        httpOnly: true,
+        secure: isProduction,
+        sameSite: isProduction ? "none" : "lax",
+        maxAge: 24 * 60 * 60 * 1000,
+      },
+    })
+  );
+};
 
 const PORT: number = Number(process.env.PORT) || 3001;
 
-// Kết nối CSDL trước -> Rồi mới chạy Sync Meilisearch & Khởi chạy Server
 const startServer = async () => {
   try {
     await database.connect();
+
+    // Kết nối Redis và đăng ký middleware session
+    await configureSession();
+
+    // Đăng ký các route sau session middleware
+    routeMain(app);
+    routeAdmin(app);
+
+    app.use((req: Request, res: Response) => {
+      res.status(404).render('errors/404', {
+        pageTitle: "Error",
+      });
+    });
 
     app.listen(PORT, "0.0.0.0", () => {
       console.log(`Server is running on port ${PORT}`);
@@ -80,6 +134,7 @@ const startServer = async () => {
     syncSongsToMeili().catch((error) => {
       console.error("Meilisearch sync failed:", error);
     });
+
   } catch (error) {
     console.error("Server startup failed:", error);
     process.exit(1);
