@@ -59,6 +59,8 @@ const body_parser_1 = __importDefault(require("body-parser"));
 const method_override_1 = __importDefault(require("method-override"));
 const cookie_parser_1 = __importDefault(require("cookie-parser"));
 const express_session_1 = __importDefault(require("express-session"));
+const redis_1 = require("redis");
+const connect_redis_1 = require("connect-redis");
 const cors_1 = __importDefault(require("cors"));
 const app = (0, express_1.default)();
 app.use((0, cors_1.default)({
@@ -77,29 +79,69 @@ app.use(body_parser_1.default.urlencoded({ extended: false }));
 app.use('/tinymce', express_1.default.static(path_1.default.join(__dirname, 'node_modules', 'tinymce')));
 app.locals.prefixAdmin = system_1.systemConfig.prefixAdmin;
 app.use((0, cookie_parser_1.default)('tanpaisen'));
-app.use((0, express_session_1.default)({
-    secret: 'tanpaisen',
-    cookie: { maxAge: 60000 },
-    resave: false,
-    saveUninitialized: true,
-}));
 app.get("/health", (_req, res) => {
     res.status(200).json({
         status: "ok",
         service: "express-backend"
     });
 });
-(0, index_route_1.routeMain)(app);
-(0, index_route_2.routeAdmin)(app);
-app.use((req, res) => {
-    res.status(404).render('errors/404', {
-        pageTitle: "Error",
-    });
+const configureSession = () => __awaiter(void 0, void 0, void 0, function* () {
+    const redisUrl = process.env.REDIS_URL;
+    const isProduction = process.env.NODE_ENV === "production";
+    const sessionSecret = process.env.SESSION_SECRET;
+    if (isProduction && !sessionSecret) {
+        throw new Error("Missing SESSION_SECRET");
+    }
+    let store;
+    if (redisUrl) {
+        const redisClient = (0, redis_1.createClient)({
+            url: redisUrl,
+        });
+        redisClient.on("error", (error) => {
+            console.error("[Redis] Error:", error);
+        });
+        yield redisClient.connect();
+        console.log("[Redis] Connected successfully");
+        store = new connect_redis_1.RedisStore({
+            client: redisClient,
+            prefix: "music:sess:",
+        });
+    }
+    else if (isProduction) {
+        throw new Error("Missing REDIS_URL");
+    }
+    else {
+        console.log("[Session] Using local MemoryStore");
+    }
+    if (isProduction) {
+        app.set("trust proxy", 1);
+    }
+    app.use((0, express_session_1.default)({
+        store,
+        name: "music.sid",
+        secret: sessionSecret || "local-dev-only-secret",
+        resave: false,
+        saveUninitialized: false,
+        cookie: {
+            httpOnly: true,
+            secure: isProduction,
+            sameSite: isProduction ? "none" : "lax",
+            maxAge: 24 * 60 * 60 * 1000,
+        },
+    }));
 });
 const PORT = Number(process.env.PORT) || 3001;
 const startServer = () => __awaiter(void 0, void 0, void 0, function* () {
     try {
         yield database.connect();
+        yield configureSession();
+        (0, index_route_1.routeMain)(app);
+        (0, index_route_2.routeAdmin)(app);
+        app.use((req, res) => {
+            res.status(404).render('errors/404', {
+                pageTitle: "Error",
+            });
+        });
         app.listen(PORT, "0.0.0.0", () => {
             console.log(`Server is running on port ${PORT}`);
         });
