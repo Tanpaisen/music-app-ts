@@ -6,6 +6,7 @@ import { SongSummary } from "@/types/song";
 
 interface Props {
   audioSrc: string | null;
+  songSlug: string; // Slug để ghi nhận lượt nghe sau 30 giây
   isPlaying: boolean;
   currentTime: number;
   onTogglePlay: () => void;
@@ -21,7 +22,7 @@ function fmt(s: number) {
 }
 
 export default function AudioControls({
-  audioSrc, isPlaying, currentTime,
+  audioSrc, songSlug, isPlaying, currentTime,
   onTogglePlay, onTimeUpdate,
   related, showRelated, onToggleRelated,
 }: Props) {
@@ -30,22 +31,98 @@ export default function AudioControls({
 
   useEffect(() => {
     const a = audioRef.current;
-    if (!a) return;
-    const onTime = () => onTimeUpdate(a.currentTime);
-    const onLoad = () => { durationRef.current = a.duration; };
+    if (!a || !audioSrc || !songSlug) return;
+
+    // Chỉ đếm giây audio thực sự phát, KHÔNG dùng currentTime >= 30:
+    // tua bài không được xem là đã nghe đủ 30 giây.
+    let playedSeconds = 0;
+    let counted = false;
+    let previousAudioTime: number | null = null;
+    let previousWallTime: number | null = null;
+
+    const resetSample = () => {
+      previousAudioTime = null;
+      previousWallTime = null;
+    };
+
+    const onLoad = () => {
+      durationRef.current = Number.isFinite(a.duration) ? a.duration : 0;
+    };
+
+    const onTime = () => {
+      onTimeUpdate(a.currentTime);
+
+      if (counted || a.paused || a.seeking || a.ended || a.readyState < 2) {
+        resetSample();
+        return;
+      }
+
+      const wallTime = performance.now();
+      const mediaTime = a.currentTime;
+
+      if (previousAudioTime !== null && previousWallTime !== null) {
+        const mediaDelta = mediaTime - previousAudioTime;
+        const realDelta = (wallTime - previousWallTime) / 1000;
+        const playbackRate = a.playbackRate > 0 ? a.playbackRate : 1;
+
+        // Không tính khi tua hoặc khi audio không chạy; hỗ trợ cả pause/resume.
+        if (
+          mediaDelta > 0 &&
+          realDelta > 0 &&
+          mediaDelta <= realDelta * playbackRate + 0.5
+        ) {
+          playedSeconds += Math.min(realDelta, mediaDelta / playbackRate);
+        }
+      }
+
+      previousAudioTime = mediaTime;
+      previousWallTime = wallTime;
+
+      if (playedSeconds >= 30 && !counted) {
+        counted = true; // Chỉ gửi MỘT lần trong phiên mở bài hát này.
+        void fetch(`/api/songs/listen/${encodeURIComponent(songSlug)}`, {
+          method: "PATCH",
+          credentials: "same-origin",
+        })
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error(`Ghi nhận lượt nghe thất bại: HTTP ${response.status}`);
+            }
+          })
+          .catch((error) => {
+            // Không tự gửi lại: nếu server đã tăng nhưng response bị mất,
+            // retry có thể làm tăng trùng lượt nghe.
+            console.error("[listen/30s]", error);
+          });
+      }
+    };
+
     a.addEventListener("timeupdate", onTime);
     a.addEventListener("loadedmetadata", onLoad);
+    // Đặt lại điểm mốc, KHÔNG xóa tổng giây đã nghe khi Pause/tua.
+    for (const event of ["play", "pause", "seeking", "seeked", "waiting", "ended", "ratechange"]) {
+      a.addEventListener(event, resetSample);
+    }
+    if (a.readyState >= 1) onLoad();
+
     return () => {
       a.removeEventListener("timeupdate", onTime);
       a.removeEventListener("loadedmetadata", onLoad);
+      for (const event of ["play", "pause", "seeking", "seeked", "waiting", "ended", "ratechange"]) {
+        a.removeEventListener(event, resetSample);
+      }
     };
-  }, [onTimeUpdate]);
+  }, [audioSrc, songSlug, onTimeUpdate]);
 
   useEffect(() => {
     const a = audioRef.current;
     if (!a) return;
-    isPlaying ? a.play().catch(() => {}) : a.pause();
-  }, [isPlaying]);
+    if (isPlaying) {
+      void a.play().catch((error) => console.error("[audio/play]", error));
+    } else {
+      a.pause();
+    }
+  }, [isPlaying, audioSrc]);
 
   const duration = durationRef.current;
   const progress = duration ? (currentTime / duration) * 100 : 0;

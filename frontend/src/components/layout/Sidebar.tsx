@@ -4,6 +4,7 @@ const navItems = [
   { label: "Trang chủ", href: "/", icon: "bi-house-door-fill" },
   { label: "Tìm kiếm", href: "/search", icon: "bi-search" },
   { label: "Thư viện", href: "/library", icon: "bi-collection-play" },
+  { label: "Playlist của tôi", href: "/playlists", icon: "bi-music-note-list" },
   { label: "Đã thích", href: "/liked", icon: "bi-heart" },
 ];
 

@@ -36,7 +36,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.roleRouter = void 0;
 const express_1 = require("express");
 const controller = __importStar(require("../../controllers/admin/role.controller"));
-const authentication = __importStar(require("../../middleware/authentication.middleware"));
+const authentication = __importStar(require("../../middleware/admin/authentication.middleware"));
 const router = (0, express_1.Router)();
 router.get("/", authentication.checkPermission('roles_view'), controller.index);
 router.get("/create", controller.create);

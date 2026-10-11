@@ -20,7 +20,6 @@ exports.songService = {
             const raw = yield song_repository_1.songRepository.findBySlug(slug);
             if (!raw)
                 return null;
-            yield song_repository_1.songRepository.incrementListen(slug);
             const singerIds = raw.singerId ? [String(raw.singerId)] : [];
             const topicIds = raw.topicId ? [String(raw.topicId)] : [];
             const [singers, topics, rawRelated] = yield Promise.all([

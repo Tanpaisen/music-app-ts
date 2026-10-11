@@ -71,6 +71,7 @@ export default function SongDetailClient({ song, related }: Props) {
       {/* Bottom: seek bar + controls + gợi ý */}
       <AudioControls
         audioSrc={song.audio}
+        songSlug={song.slug}
         isPlaying={isPlaying}
         currentTime={currentTime}
         onTogglePlay={() => setIsPlaying((p) => !p)}

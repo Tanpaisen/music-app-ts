@@ -43,7 +43,7 @@ const singer_route_1 = require("./singer.route");
 const role_route_1 = require("./role.route");
 const account_route_1 = require("./account.route");
 const auth_route_1 = require("./auth.route");
-const authMiddleware = __importStar(require("../../middleware/authentication.middleware"));
+const authMiddleware = __importStar(require("../../middleware/admin/authentication.middleware"));
 const routeAdmin = (app) => {
     const path = system_1.systemConfig.prefixAdmin;
     app.use(`/${path}/dashboard`, authMiddleware.requireAuth, dashboard_route_1.dashboardRouter);

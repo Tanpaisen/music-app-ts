@@ -14,7 +14,7 @@ const songSchema = new mongoose.Schema(
       ref: "Singer"
     },
     topicId: String,
-    like: Number,
+    like: { type: Number, default: 0, min: 0 },
     listen: {
       type: Number,
       default: 0,

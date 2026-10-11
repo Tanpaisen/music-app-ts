@@ -8,7 +8,7 @@ import { singerRouter } from './singer.route';
 import { roleRouter } from './role.route';
 import { accountRouter } from './account.route';
 import { authRouter } from './auth.route';
-import * as authMiddleware  from '../../middleware/authentication.middleware'
+import * as authMiddleware  from '../../middleware/admin/authentication.middleware'
 
 export const routeAdmin = (app: Express) => {
     const path = systemConfig.prefixAdmin;

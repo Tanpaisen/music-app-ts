@@ -12,159 +12,199 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.listenPatch = exports.favorite = exports.favoritePatch = exports.like = exports.detail = exports.list = void 0;
+exports.listenPatch = exports.favorite = exports.favoriteState = exports.favoritePatch = exports.like = exports.likeState = exports.detail = exports.list = void 0;
+const mongoose_1 = __importDefault(require("mongoose"));
 const song_model_1 = __importDefault(require("../../models/song.model"));
 const topic_model_1 = __importDefault(require("../../models/topic.model"));
 const singer_model_1 = __importDefault(require("../../models/singer.model"));
 const favorite_song_model_1 = __importDefault(require("../../models/favorite.song.model"));
+const song_like_model_1 = __importDefault(require("../../models/song-like.model"));
 const song_service_1 = require("../../services/song.service");
 const list = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const slug = req.params.songSlug;
-    if (!slug) {
-        return res.status(400).json({ message: "Missing songSlug parameter" });
+    try {
+        const topic = yield topic_model_1.default.findOne({ slug: req.params.songSlug, deleted: false });
+        if (!topic) {
+            res.status(404).json({ message: "Không tìm thấy chủ đề" });
+            return;
+        }
+        const songs = yield song_model_1.default.find({ topicId: String(topic._id), deleted: false }).lean();
+        const populated = yield Promise.all(songs.map((song) => __awaiter(void 0, void 0, void 0, function* () {
+            const singer = song.singerId && mongoose_1.default.isValidObjectId(song.singerId)
+                ? yield singer_model_1.default.findById(song.singerId).select("fullName").lean()
+                : null;
+            return Object.assign(Object.assign({}, song), { singer });
+        })));
+        res.render("client/pages/songs/list", { pageTitle: "Danh sách bài hát", topic, songs: populated });
     }
-    const topic = yield topic_model_1.default.findOne({
-        slug: slug,
-        deleted: false
-    });
-    if (!topic) {
-        return res.status(404).json({ message: "Topic not found" });
+    catch (error) {
+        console.error("[songs/list]", error);
+        res.status(500).json({ message: "Lỗi máy chủ" });
     }
-    const songs = yield song_model_1.default.find({
-        topicId: topic.id,
-    }).lean();
-    for (const song of songs) {
-        const singer = yield singer_model_1.default.findById(song.singerId).select("fullName");
-        song.singer = singer;
-    }
-    res.render("client/pages/songs/list", {
-        pageTitle: "Danh sách bài hát",
-        topic: topic,
-        songs: songs
-    });
 });
 exports.list = list;
 const detail = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { songSlug } = req.params;
-        if (!songSlug) {
-            return res.status(400).json({ code: 400, message: "Thiếu songSlug" });
-        }
-        const data = yield song_service_1.songService.getSongDetail(songSlug.toString());
+        const data = yield song_service_1.songService.getSongDetail(String(req.params.songSlug));
         if (!data) {
-            return res.status(404).json({ code: 404, message: "Không tìm thấy bài hát" });
+            res.status(404).json({ code: 404, message: "Không tìm thấy bài hát" });
+            return;
         }
         res.json({ code: 200, message: "Thành công", data });
     }
     catch (error) {
-        console.error("[song.controller/detail]", error);
+        console.error("[songs/detail]", error);
         res.status(500).json({ code: 500, message: "Lỗi máy chủ" });
     }
 });
 exports.detail = detail;
-const like = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const likeState = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
+    const userId = res.locals.authUserId;
     const songId = req.params.songId;
-    const status = req.params.status;
-    const song = yield song_model_1.default.findOne({
-        _id: songId,
-        deleted: false,
-        status: "active"
-    });
-    let like = 0;
-    if (song) {
-        like = (_a = song.like) !== null && _a !== void 0 ? _a : 0;
+    if (!mongoose_1.default.isValidObjectId(songId)) {
+        res.status(400).json({ message: "songId không hợp lệ" });
+        return;
     }
-    const newLike = status == "like" ? like + 1 : like - 1;
-    yield song_model_1.default.updateOne({
-        _id: songId,
-        deleted: false,
-        status: "active"
-    }, {
-        like: newLike
-    });
-    res.json({
-        code: 200,
-        message: "Thành công",
-        like: newLike
-    });
+    try {
+        const [liked, song] = yield Promise.all([
+            song_like_model_1.default.exists({ userId, songId }),
+            song_model_1.default.findOne({ _id: songId, deleted: false, status: "active" }).select("like"),
+        ]);
+        if (!song) {
+            res.status(404).json({ message: "Không tìm thấy bài hát" });
+            return;
+        }
+        res.json({ code: 200, liked: Boolean(liked), like: (_a = song.like) !== null && _a !== void 0 ? _a : 0 });
+    }
+    catch (error) {
+        console.error("[songs/likeState]", error);
+        res.status(500).json({ message: "Lỗi máy chủ" });
+    }
+});
+exports.likeState = likeState;
+const like = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { songId, status } = req.params;
+    const userId = res.locals.authUserId;
+    if (!mongoose_1.default.isValidObjectId(songId) || !["like", "unlike"].includes(String(status))) {
+        res.status(400).json({ message: "songId hoặc status không hợp lệ" });
+        return;
+    }
+    try {
+        const song = yield song_model_1.default.findOne({ _id: songId, deleted: false, status: "active" }).select("_id");
+        if (!song) {
+            res.status(404).json({ message: "Không tìm thấy bài hát" });
+            return;
+        }
+        const session = yield mongoose_1.default.startSession();
+        let count = 0;
+        try {
+            yield session.withTransaction(() => __awaiter(void 0, void 0, void 0, function* () {
+                if (status === "like") {
+                    yield song_like_model_1.default.updateOne({ userId, songId }, { $setOnInsert: { userId, songId } }, { upsert: true, session });
+                }
+                else {
+                    yield song_like_model_1.default.deleteOne({ userId, songId }).session(session);
+                }
+                count = yield song_like_model_1.default.countDocuments({ songId }).session(session);
+                const result = yield song_model_1.default.updateOne({ _id: songId, deleted: false, status: "active" }, { $set: { like: count } }, { session });
+                if (result.matchedCount !== 1)
+                    throw new Error("Song no longer available");
+            }));
+        }
+        finally {
+            yield session.endSession();
+        }
+        res.json({ code: 200, message: "Thành công", liked: status === "like", like: count });
+    }
+    catch (error) {
+        if ((error === null || error === void 0 ? void 0 : error.code) === 11000 && status === "like") {
+            const count = yield song_like_model_1.default.countDocuments({ songId });
+            res.json({ code: 200, message: "Đã thích bài hát", liked: true, like: count });
+            return;
+        }
+        console.error("[songs/like]", error);
+        res.status(500).json({ message: "Không thể cập nhật lượt thích" });
+    }
 });
 exports.like = like;
 const favoritePatch = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const id = req.params.songId;
-    const status = req.params.status;
-    if (status == "favorite") {
-        const favoriteSong = new favorite_song_model_1.default({
-            songId: id,
-            userId: "",
-        });
-        yield favoriteSong.save();
+    const { songId, status } = req.params;
+    const userId = res.locals.authUserId;
+    if (!mongoose_1.default.isValidObjectId(songId) || !["favorite", "unfavorite"].includes(String(status))) {
+        res.status(400).json({ message: "songId hoặc status không hợp lệ" });
+        return;
     }
-    else {
-        yield favorite_song_model_1.default.deleteOne({
-            songId: id,
-            userId: "",
-        });
+    try {
+        if (status === "favorite") {
+            const exists = yield song_model_1.default.exists({ _id: songId, deleted: false, status: "active" });
+            if (!exists) {
+                res.status(404).json({ message: "Không tìm thấy bài hát" });
+                return;
+            }
+            yield favorite_song_model_1.default.updateOne({ userId, songId }, { $set: { deleted: false, deletedAt: null }, $setOnInsert: { userId, songId } }, { upsert: true });
+        }
+        else {
+            yield favorite_song_model_1.default.updateOne({ userId, songId, deleted: false }, { $set: { deleted: true, deletedAt: new Date() } });
+        }
+        res.json({ code: 200, message: status === "favorite" ? "Đã thêm vào yêu thích" : "Đã xóa yêu thích" });
     }
-    res.json({
-        code: 200,
-        message: status == "favorite" ? "Đã thêm vào yêu thích" : "Đã xóa yêu thích"
-    });
+    catch (error) {
+        console.error("[songs/favoritePatch]", error);
+        res.status(500).json({ message: "Không thể cập nhật bài hát yêu thích" });
+    }
 });
 exports.favoritePatch = favoritePatch;
-const favorite = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const favoriteSongs = yield favorite_song_model_1.default.find({
-        deleted: false,
-        userId: "",
-    }).lean();
-    for (const item of favoriteSongs) {
-        const song = yield song_model_1.default.findOne({
-            _id: item.songId,
-            deleted: false,
-            status: "active"
-        }).lean();
-        if (song) {
-            item.song = song;
-            const singer = yield singer_model_1.default.findOne({
-                _id: song.singerId,
-                deleted: false
-            }).lean();
-            item.singer = singer;
-        }
+const favoriteState = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const userId = res.locals.authUserId;
+    const songId = req.params.songId;
+    if (!mongoose_1.default.isValidObjectId(songId)) {
+        res.status(400).json({ message: "songId không hợp lệ" });
+        return;
     }
-    res.render("client/pages/songs/favorite", {
-        pageTitle: "Trang bài hát yêu thích",
-        favoriteSongs: favoriteSongs
-    });
+    try {
+        const found = yield favorite_song_model_1.default.exists({ userId, songId, deleted: false });
+        res.json({ code: 200, favorite: Boolean(found) });
+    }
+    catch (error) {
+        console.error("[songs/favoriteState]", error);
+        res.status(500).json({ message: "Lỗi máy chủ" });
+    }
+});
+exports.favoriteState = favoriteState;
+const favorite = (_req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const userId = res.locals.authUserId;
+    try {
+        const favorites = yield favorite_song_model_1.default.find({ userId, deleted: false })
+            .sort({ createdAt: -1 }).lean();
+        const data = yield Promise.all(favorites.map((item) => __awaiter(void 0, void 0, void 0, function* () {
+            const song = yield song_model_1.default.findOne({ _id: item.songId, deleted: false, status: "active" }).lean();
+            if (!song)
+                return null;
+            const singer = song.singerId && mongoose_1.default.isValidObjectId(song.singerId)
+                ? yield singer_model_1.default.findById(song.singerId).select("fullName slug").lean()
+                : null;
+            return { id: String(item._id), song, singer };
+        })));
+        res.json({ code: 200, data: data.filter(Boolean) });
+    }
+    catch (error) {
+        console.error("[songs/favorite]", error);
+        res.status(500).json({ message: "Không thể lấy bài hát yêu thích" });
+    }
 });
 exports.favorite = favorite;
 const listenPatch = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
-    const songSlug = req.params.songSlug;
-    const song = yield song_model_1.default.findOne({
-        slug: songSlug,
-        deleted: false,
-        status: "active"
-    });
-    if (!song) {
-        return res.json({
-            code: 404,
-            message: "Không tìm thấy bài hát"
-        });
+    try {
+        const song = yield song_model_1.default.findOneAndUpdate({ slug: req.params.songSlug, deleted: false, status: "active" }, { $inc: { listen: 1 } }, { new: true });
+        if (!song) {
+            res.status(404).json({ code: 404, message: "Không tìm thấy bài hát" });
+            return;
+        }
+        res.json({ code: 200, message: "Đã ghi nhận lượt nghe", listen: song.listen });
     }
-    const currentListen = (_a = song.listen) !== null && _a !== void 0 ? _a : 0;
-    const newListen = currentListen + 1;
-    yield song_model_1.default.updateOne({
-        slug: songSlug,
-        deleted: false,
-        status: "active"
-    }, {
-        listen: newListen
-    });
-    res.json({
-        code: 200,
-        message: "Đã xem",
-        listen: newListen
-    });
+    catch (error) {
+        console.error("[songs/listen]", error);
+        res.status(500).json({ message: "Lỗi máy chủ" });
+    }
 });
 exports.listenPatch = listenPatch;

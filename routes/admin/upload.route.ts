@@ -1,6 +1,6 @@
 import { Router } from "express";
 import multer from 'multer';
-import * as uploadCloud from '../../middleware/uploadCloud.middleware'
+import * as uploadCloud from '../../middleware/admin/uploadCloud.middleware'
 
 const upload = multer()
 

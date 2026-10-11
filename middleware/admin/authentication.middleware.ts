@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
-import { systemConfig } from '../config/system'
-import Account from '../models/account.model';
-import Role from '../models/role.model';
+import { systemConfig } from '../../config/system'
+import Account from '../../models/account.model';
+import Role from '../../models/role.model';
 
 
 export const requireAuth = async (req: Request, res: Response, next: NextFunction) => {
