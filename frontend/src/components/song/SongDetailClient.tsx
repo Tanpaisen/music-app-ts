@@ -50,7 +50,14 @@ export default function SongDetailClient({ song, related }: Props) {
           <div className="mb-4 mt-4">
             <h1 className="text-[19px] font-medium text-[#e0e0e0]">{song.title}</h1>
             <p className="mt-1 text-[12px] text-[#4a4a4a]">
-              {song.singer?.fullName ?? "Đang cập nhật"}
+              {song.singer ? (
+                <Link
+                  href={`/artists/${encodeURIComponent(song.singer.slug || song.singer._id)}`}
+                  className="hover:text-[#4ade80] hover:underline"
+                >
+                  {song.singer.fullName}
+                </Link>
+              ) : "Đang cập nhật"}
               {song.topic && ` · ${song.topic.title}`}
             </p>
           </div>

@@ -122,18 +122,22 @@ export default function FollowingPage() {
               <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
                 {items.map((item) => (
                   <div key={item.singerId} className="flex items-center gap-4 rounded-xl border border-[#282828] bg-[#151515] p-4">
-                    {item.avatar ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={item.avatar} alt={`Ảnh ${item.fullName}`} className="h-14 w-14 shrink-0 rounded-full object-cover" />
-                    ) : (
-                      <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-[#252525]">
-                        <i className="bi bi-person text-2xl text-[#888]" aria-hidden="true" />
+                    <Link href={`/artists/${encodeURIComponent(item.slug || item.singerId)}`}
+                      className="flex min-w-0 flex-1 items-center gap-4 hover:text-[#4ade80]"
+                      aria-label={`Xem nghệ sĩ ${item.fullName}`}>
+                      {item.avatar ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={item.avatar} alt={`Ảnh ${item.fullName}`} className="h-14 w-14 shrink-0 rounded-full object-cover" />
+                      ) : (
+                        <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-[#252525]">
+                          <i className="bi bi-person text-2xl text-[#888]" aria-hidden="true" />
+                        </div>
+                      )}
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate font-medium text-[#ddd]">{item.fullName}</p>
+                        <p className="mt-1 text-xs text-[#888]">Đang theo dõi</p>
                       </div>
-                    )}
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate font-medium text-[#ddd]">{item.fullName}</p>
-                      <p className="mt-1 text-xs text-[#888]">Đang theo dõi</p>
-                    </div>
+                    </Link>
                     <button
                       type="button" onClick={() => void remove(item)}
                       disabled={Boolean(removingId)}
