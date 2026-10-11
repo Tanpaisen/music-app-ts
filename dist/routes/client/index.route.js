@@ -8,6 +8,7 @@ const home_route_1 = require("../client/home.route");
 const auth_route_1 = require("./auth.route");
 const playlist_route_1 = require("./playlist.route");
 const comment_route_1 = require("./comment.route");
+const follow_route_1 = require("./follow.route");
 const routeMain = (app) => {
     app.use('/', home_route_1.homeRouter);
     app.use('/home', home_route_1.homeRouter);
@@ -15,6 +16,7 @@ const routeMain = (app) => {
     app.use('/songs', song_route_1.songRouter);
     app.use('/api/playlists', playlist_route_1.playlistRouter);
     app.use('/api/comments', comment_route_1.commentRouter);
+    app.use('/api/follows', follow_route_1.followRouter);
     app.use('/search', search_route_1.searchRouter);
     app.use('/api/auth', auth_route_1.clientAuthRouter);
 };

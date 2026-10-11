@@ -6,6 +6,7 @@ import { homeRouter } from '../client/home.route'
 import { clientAuthRouter } from './auth.route'
 import { playlistRouter } from './playlist.route'
 import { commentRouter } from './comment.route'
+import { followRouter } from './follow.route'
 
 export const routeMain = (app: Express) => {
     app.use('/', homeRouter)
@@ -19,6 +20,8 @@ export const routeMain = (app: Express) => {
     app.use('/api/playlists', playlistRouter)
 
     app.use('/api/comments', commentRouter)
+
+    app.use('/api/follows', followRouter)
 
     app.use('/search', searchRouter)
 

@@ -14,7 +14,6 @@ interface Props {
 export default function ActionBar({ song }: Props) {
   const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(song.like ?? 0);
-  const [following, setFollowing] = useState(false);
   const [showComment, setShowComment] = useState(false);
   const [showPlaylist, setShowPlaylist] = useState(false);
   const [commentCount, setCommentCount] = useState(0);
@@ -29,6 +28,68 @@ export default function ActionBar({ song }: Props) {
   const [favoriteLoading, setFavoriteLoading] = useState(true);
   const [favoritePending, setFavoritePending] = useState(false);
   const [favoriteError, setFavoriteError] = useState("");
+
+  // Theo dõi nghệ sĩ: lưu theo User ID, tách khỏi Like và Favorite.
+  const singerId = song.singer?._id;
+  const [following, setFollowing] = useState(false);
+  const [followLoading, setFollowLoading] = useState(true);
+  const [followPending, setFollowPending] = useState(false);
+  const [followError, setFollowError] = useState("");
+
+  useEffect(() => {
+    const controller = new AbortController();
+    setFollowing(false);
+    setFollowError("");
+    setFollowLoading(Boolean(singerId));
+    if (!singerId) return () => controller.abort();
+
+    const loadFollow = async () => {
+      try {
+        const response = await fetch(`/api/follows/singers/${singerId}/status`, {
+          credentials: "same-origin", cache: "no-store", signal: controller.signal,
+        });
+        // Người chưa đăng nhập vẫn nghe nhạc và xem trang bình thường.
+        if (response.status === 401) return;
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const result: { following?: boolean } = await response.json();
+        if (!controller.signal.aborted) setFollowing(Boolean(result.following));
+      } catch (cause) {
+        if (!controller.signal.aborted) {
+          console.error("[Follow/status]", cause);
+          setFollowError("Không thể lấy trạng thái theo dõi");
+        }
+      } finally {
+        if (!controller.signal.aborted) setFollowLoading(false);
+      }
+    };
+    void loadFollow();
+    return () => controller.abort();
+  }, [singerId]);
+
+  const handleFollow = async () => {
+    if (!singerId || followLoading || followPending) return;
+    setFollowPending(true);
+    setFollowError("");
+    try {
+      const response = await fetch(`/api/follows/singers/${singerId}`, {
+        method: following ? "DELETE" : "PUT",
+        credentials: "same-origin",
+      });
+      if (response.status === 401) {
+        const next = window.location.pathname + window.location.search;
+        router.push(`/auth/login?next=${encodeURIComponent(next)}`);
+        return;
+      }
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const result: { following?: boolean } = await response.json();
+      setFollowing(Boolean(result.following));
+    } catch (cause) {
+      console.error("[Follow]", cause);
+      setFollowError("Không thể thay đổi theo dõi. Vui lòng thử lại.");
+    } finally {
+      setFollowPending(false);
+    }
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -259,15 +320,23 @@ export default function ActionBar({ song }: Props) {
           <span className="font-mono text-[11px] text-[#444]">{formatCompactNumber(commentCount)}</span>
         </button>
 
-        {/* Theo dõi */}
+        {/* Theo dõi nghệ sĩ thực: không còn dùng state giả */}
         <button
+          type="button"
           className={BTN}
-          onClick={() => setFollowing(!following)}
-          style={{ color: following ? "#4ade80" : undefined }}
-          aria-label="Theo dõi nghệ sĩ"
+          onClick={handleFollow}
+          disabled={!singerId || followLoading || followPending}
+          aria-pressed={following}
+          style={{
+            color: following ? "#4ade80" : undefined,
+            opacity: !singerId || followLoading || followPending ? 0.5 : 1,
+          }}
+          aria-label={following ? `Bỏ theo dõi ${song.singer?.fullName || "nghệ sĩ"}` : `Theo dõi ${song.singer?.fullName || "nghệ sĩ"}`}
         >
           <i className={`bi ${following ? "bi-person-check-fill" : "bi-person-plus"} text-[21px]`} />
-          <span className="font-mono text-[11px] text-[#444]">{following ? "Đang theo" : "Theo dõi"}</span>
+          <span className="font-mono text-[11px] text-[#444]">
+            {!singerId ? "Chưa có ca sĩ" : following ? "Đang theo" : "Theo dõi"}
+          </span>
         </button>
 
         {/* Thêm vào playlist */}
@@ -295,6 +364,7 @@ export default function ActionBar({ song }: Props) {
 
       {likeError && <p role="alert" className="mt-2 text-xs text-red-400">{likeError}</p>}
       {favoriteError && <p role="alert" className="mt-2 text-xs text-red-400">{favoriteError}</p>}
+      {followError && <p role="alert" className="mt-2 text-xs text-red-400">{followError}</p>}
 
       {/* Playlist riêng của tài khoản - lấy trực tiếp từ MongoDB qua API */}
       {showPlaylist && <PlaylistPicker songId={song._id} />}

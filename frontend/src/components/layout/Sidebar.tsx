@@ -5,6 +5,7 @@ const navItems = [
   { label: "Tìm kiếm", href: "/search", icon: "bi-search" },
   { label: "Thư viện", href: "/library", icon: "bi-collection-play" },
   { label: "Playlist của tôi", href: "/playlists", icon: "bi-music-note-list" },
+  { label: "Nghệ sĩ theo dõi", href: "/following", icon: "bi-person-check" },
   { label: "Đã thích", href: "/liked", icon: "bi-heart" },
 ];
 
