@@ -18,6 +18,7 @@ const singer_model_1 = __importDefault(require("../../models/singer.model"));
 const topic_model_1 = __importDefault(require("../../models/topic.model"));
 const song_model_1 = __importDefault(require("../../models/song.model"));
 const song_like_model_1 = __importDefault(require("../../models/song-like.model"));
+const meilisearch_service_1 = require("../../services/meilisearch.service");
 function pageOptions(req) {
     const rawPage = Number(req.query.page);
     const rawLimit = Number(req.query.limit);
@@ -25,19 +26,28 @@ function pageOptions(req) {
     const limit = Number.isSafeInteger(rawLimit) && rawLimit > 0 ? Math.min(rawLimit, 36) : 12;
     return { page, limit, skip: (page - 1) * limit };
 }
-function safeQuery(req) {
-    const q = typeof req.query.q === "string" ? req.query.q.trim().slice(0, 80) : "";
-    return q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
+const keyword = (req) => typeof req.query.q === "string" ? req.query.q.trim().slice(0, 100) : "";
 const artists = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     try {
         const { page, limit, skip } = pageOptions(req);
-        const q = safeQuery(req);
-        const filter = Object.assign({ deleted: false, status: "active" }, (q ? { fullName: { $regex: q, $options: "i" } } : {}));
-        const [data, total] = yield Promise.all([
-            singer_model_1.default.find(filter).select("fullName avatar slug").sort({ fullName: 1, _id: 1 }).skip(skip).limit(limit).lean(),
-            singer_model_1.default.countDocuments(filter),
-        ]);
+        const q = keyword(req);
+        let data, total;
+        if (q) {
+            yield (0, meilisearch_service_1.ensureMeiliIndex)("artists");
+            const result = yield (0, meilisearch_service_1.getMeiliClient)().index("artists").search(q, {
+                filter: 'deleted = false AND status = "active"', offset: skip, limit,
+            });
+            data = result.hits.map((hit) => ({ _id: hit.id, fullName: hit.fullName, avatar: hit.avatar, slug: hit.slug }));
+            total = (_a = result.estimatedTotalHits) !== null && _a !== void 0 ? _a : data.length;
+        }
+        else {
+            const filter = { deleted: false, status: "active" };
+            [data, total] = yield Promise.all([
+                singer_model_1.default.find(filter).select("fullName avatar slug").sort({ fullName: 1, _id: 1 }).skip(skip).limit(limit).lean(),
+                singer_model_1.default.countDocuments(filter),
+            ]);
+        }
         res.setHeader("Cache-Control", "no-store");
         res.json({ code: 200, data, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } });
     }
@@ -48,14 +58,26 @@ const artists = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 });
 exports.artists = artists;
 const topics = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     try {
         const { page, limit, skip } = pageOptions(req);
-        const q = safeQuery(req);
-        const filter = Object.assign({ deleted: false, status: "active" }, (q ? { title: { $regex: q, $options: "i" } } : {}));
-        const [data, total] = yield Promise.all([
-            topic_model_1.default.find(filter).select("title description slug avatar").sort({ title: 1, _id: 1 }).skip(skip).limit(limit).lean(),
-            topic_model_1.default.countDocuments(filter),
-        ]);
+        const q = keyword(req);
+        let data, total;
+        if (q) {
+            yield (0, meilisearch_service_1.ensureMeiliIndex)("topics");
+            const result = yield (0, meilisearch_service_1.getMeiliClient)().index("topics").search(q, {
+                filter: 'deleted = false AND status = "active"', offset: skip, limit,
+            });
+            data = result.hits.map((hit) => ({ _id: hit.id, title: hit.title, slug: hit.slug, avatar: hit.avatar, description: hit.description }));
+            total = (_a = result.estimatedTotalHits) !== null && _a !== void 0 ? _a : data.length;
+        }
+        else {
+            const filter = { deleted: false, status: "active" };
+            [data, total] = yield Promise.all([
+                topic_model_1.default.find(filter).select("title description slug avatar").sort({ title: 1, _id: 1 }).skip(skip).limit(limit).lean(),
+                topic_model_1.default.countDocuments(filter),
+            ]);
+        }
         res.setHeader("Cache-Control", "no-store");
         res.json({ code: 200, data, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } });
     }

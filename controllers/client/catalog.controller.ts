@@ -4,6 +4,7 @@ import Singer from "../../models/singer.model";
 import Topic from "../../models/topic.model";
 import Song from "../../models/song.model";
 import SongLike from "../../models/song-like.model";
+import { ensureMeiliIndex, getMeiliClient } from "../../services/meilisearch.service";
 
 function pageOptions(req: Request) {
   const rawPage = Number(req.query.page);
@@ -13,20 +14,28 @@ function pageOptions(req: Request) {
   return { page, limit, skip: (page - 1) * limit };
 }
 
-function safeQuery(req: Request) {
-  const q = typeof req.query.q === "string" ? req.query.q.trim().slice(0, 80) : "";
-  return q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
+// All keyword queries use Meilisearch; MongoDB is used for unfiltered browsing only.
+const keyword = (req: Request) => typeof req.query.q === "string" ? req.query.q.trim().slice(0, 100) : "";
 
 export const artists = async (req: Request, res: Response): Promise<void> => {
   try {
     const { page, limit, skip } = pageOptions(req);
-    const q = safeQuery(req);
-    const filter = { deleted: false, status: "active", ...(q ? { fullName: { $regex: q, $options: "i" } } : {}) };
-    const [data, total] = await Promise.all([
-      Singer.find(filter).select("fullName avatar slug").sort({ fullName: 1, _id: 1 }).skip(skip).limit(limit).lean(),
-      Singer.countDocuments(filter),
-    ]);
+    const q = keyword(req);
+    let data: any[], total: number;
+    if (q) {
+      await ensureMeiliIndex("artists");
+      const result = await getMeiliClient().index("artists").search(q, {
+        filter: 'deleted = false AND status = "active"', offset: skip, limit,
+      });
+      data = result.hits.map((hit: any) => ({ _id: hit.id, fullName: hit.fullName, avatar: hit.avatar, slug: hit.slug }));
+      total = result.estimatedTotalHits ?? data.length;
+    } else {
+      const filter = { deleted: false, status: "active" };
+      [data, total] = await Promise.all([
+        Singer.find(filter).select("fullName avatar slug").sort({ fullName: 1, _id: 1 }).skip(skip).limit(limit).lean(),
+        Singer.countDocuments(filter),
+      ]);
+    }
     res.setHeader("Cache-Control", "no-store");
     res.json({ code: 200, data, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } });
   } catch (error) {
@@ -38,12 +47,22 @@ export const artists = async (req: Request, res: Response): Promise<void> => {
 export const topics = async (req: Request, res: Response): Promise<void> => {
   try {
     const { page, limit, skip } = pageOptions(req);
-    const q = safeQuery(req);
-    const filter = { deleted: false, status: "active", ...(q ? { title: { $regex: q, $options: "i" } } : {}) };
-    const [data, total] = await Promise.all([
-      Topic.find(filter).select("title description slug avatar").sort({ title: 1, _id: 1 }).skip(skip).limit(limit).lean(),
-      Topic.countDocuments(filter),
-    ]);
+    const q = keyword(req);
+    let data: any[], total: number;
+    if (q) {
+      await ensureMeiliIndex("topics");
+      const result = await getMeiliClient().index("topics").search(q, {
+        filter: 'deleted = false AND status = "active"', offset: skip, limit,
+      });
+      data = result.hits.map((hit: any) => ({ _id: hit.id, title: hit.title, slug: hit.slug, avatar: hit.avatar, description: hit.description }));
+      total = result.estimatedTotalHits ?? data.length;
+    } else {
+      const filter = { deleted: false, status: "active" };
+      [data, total] = await Promise.all([
+        Topic.find(filter).select("title description slug avatar").sort({ title: 1, _id: 1 }).skip(skip).limit(limit).lean(),
+        Topic.countDocuments(filter),
+      ]);
+    }
     res.setHeader("Cache-Control", "no-store");
     res.json({ code: 200, data, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } });
   } catch (error) {

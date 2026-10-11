@@ -19,12 +19,20 @@ const nextConfig = {
   async rewrites() {
     return [
       {
+        source: "/search/all",
+        destination: `${BACKEND_URL}/search/all`,
+      },
+      {
         source: "/search/suggest",
         destination: `${BACKEND_URL}/search/suggest`,
       },
       {
         source: "/api/auth/:path*",
         destination: `${BACKEND_URL}/api/auth/:path*`,
+      },
+      {
+        source: "/api/catalog/:path*",
+        destination: `${BACKEND_URL}/api/catalog/:path*`,
       },
       {
         source: "/api/playlists",
@@ -49,11 +57,7 @@ const nextConfig = {
       {
         source: "/api/songs/:path*",
         destination: `${BACKEND_URL}/songs/:path*`,
-      },
-      {
-        source: "/api/catalog/:path*",
-        destination: `${BACKEND_URL}/api/catalog/:path*`,
-      },
+      }
     ];
   },
 };
