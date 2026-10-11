@@ -175,7 +175,7 @@ export const listenPatch = async (req: Request, res: Response): Promise<void> =>
     const song = await Song.findOneAndUpdate(
       { slug: req.params.songSlug, deleted: false, status: "active" },
       { $inc: { listen: 1 } },
-      { new: true }
+      { returnDocument: "after" }
     );
     if (!song) { res.status(404).json({ code: 404, message: "Không tìm thấy bài hát" }); return; }
     res.json({ code: 200, message: "Đã ghi nhận lượt nghe", listen: song.listen });

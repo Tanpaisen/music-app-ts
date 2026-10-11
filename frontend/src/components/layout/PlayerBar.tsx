@@ -1,80 +1,69 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
-import { Song } from "@/types/home";
-import PlayingBars from "@/components/ui/PlayingBars";
+import Link from "next/link";
+import { usePlayer } from "@/components/player/PlayerProvider";
 
-export default function PlayerBar({ song }: { song?: Song }) {
-  const [isPlaying, setIsPlaying] = useState(true);
-  const [liked, setLiked] = useState(false);
+const formatTime = (seconds: number) => {
+  if (!Number.isFinite(seconds)) return "0:00";
+  return `${Math.floor(seconds / 60)}:${String(Math.floor(seconds % 60)).padStart(2, "0")}`;
+};
 
-  if (!song) return null;
+export default function PlayerBar() {
+  const p = usePlayer();
+  if (!p.track) return null;
 
+  const control = "rounded-lg p-2 text-muted transition-colors hover:bg-white/10 hover:text-ink disabled:cursor-not-allowed disabled:opacity-30";
+  const hasNext = p.queue.length > 1;
   return (
-    <div className="sticky bottom-0 z-20 border-t border-line bg-panel/95 backdrop-blur px-4 py-3 lg:px-8">
-      <div className="mx-auto flex max-w-7xl items-center justify-between gap-4">
-        {/* Bài đang phát */}
-        <div className="flex min-w-0 items-center gap-3">
-          <span className="relative h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-raised">
-            <Image src={song.avatar} alt={song.title} fill sizes="48px" className="object-cover" />
-          </span>
-          <div className="min-w-0">
-            <p className="truncate text-sm text-ink">{song.title}</p>
-            <p className="truncate text-xs text-muted">{song.singer?.fullName ?? "Đang cập nhật"}</p>
-          </div>
-          <button
-            onClick={() => setLiked((v) => !v)}
-            aria-label="Yêu thích"
-            className={`ml-2 shrink-0 ${liked ? "text-coral" : "text-muted hover:text-coral"}`}
-          >
-            <i className={`bi ${liked ? "bi-heart-fill" : "bi-heart"}`} />
-          </button>
-        </div>
+    <aside aria-label="Trình phát nhạc thu nhỏ" className="fixed inset-x-0 bottom-0 z-[50] border-t border-line bg-panel/95 px-3 py-2 backdrop-blur-xl sm:px-6">
+      <div className="mx-auto max-w-7xl">
+        <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
+          <Link href={`/songs/detail/${encodeURIComponent(p.track.slug)}`}
+            className="flex min-w-0 max-w-[54%] items-center gap-2 hover:opacity-80 sm:flex-1 sm:max-w-[34%]"
+            aria-label={`Mở chi tiết ${p.track.title}`}>
+            <span className="relative h-10 w-10 shrink-0 overflow-hidden rounded-md bg-raised sm:h-12 sm:w-12">
+              {p.track.avatar ? <Image src={p.track.avatar} alt={p.track.title} fill sizes="48px" className="object-cover" /> : <i className="bi bi-music-note-beamed" />}
+            </span>
+            <span className="min-w-0">
+              <span className="block truncate text-xs font-semibold text-ink sm:text-sm">{p.track.title}</span>
+              <span className="block truncate text-[11px] text-muted">{p.track.singer?.fullName ?? "Đang cập nhật"}</span>
+            </span>
+          </Link>
 
-        {/* Điều khiển */}
-        <div className="flex flex-col items-center gap-1.5">
-          <div className="flex items-center gap-5 text-ink">
-            <button aria-label="Ngẫu nhiên" className="text-muted hover:text-ink">
-              <i className="bi bi-shuffle" />
+          <div className="flex items-center justify-center gap-0.5 sm:gap-1">
+            <button type="button" className={control} onClick={p.toggleShuffle} aria-label="Phát ngẫu nhiên" aria-pressed={p.shuffle}
+              style={{ color: p.shuffle ? "#f2a65a" : undefined }}><i className="bi bi-shuffle" /></button>
+            <button type="button" className={control} onClick={p.previousSong} aria-label="Bài trước"><i className="bi bi-skip-start-fill text-lg" /></button>
+            <button type="button" onClick={p.togglePlay} aria-label={p.isPlaying ? "Tạm dừng" : "Tiếp tục phát"}
+              className="mx-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-ink text-lg active:scale-95"
+              style={{ color: "#171717" }}>
+              <i className={`bi ${p.isPlaying ? "bi-pause-fill" : "bi-play-fill"}`} />
             </button>
-            <button aria-label="Bài trước" className="text-muted hover:text-ink">
-              <i className="bi bi-skip-start-fill" />
-            </button>
-            <button
-              onClick={() => setIsPlaying((v) => !v)}
-              aria-label={isPlaying ? "Tạm dừng" : "Phát"}
-              className="flex h-9 w-9 items-center justify-center rounded-full bg-ink text-base"
-            >
-              <i className={`bi ${isPlaying ? "bi-pause-fill" : "bi-play-fill"}`} />
-            </button>
-            <button aria-label="Bài tiếp" className="text-muted hover:text-ink">
-              <i className="bi bi-skip-end-fill" />
-            </button>
-            <button aria-label="Lặp lại" className="text-muted hover:text-ink">
-              <i className="bi bi-repeat" />
+            <button type="button" className={control} onClick={p.nextSong} disabled={!hasNext && p.repeat !== "all"}
+              aria-label="Bài tiếp theo"><i className="bi bi-skip-end-fill text-lg" /></button>
+            <button type="button" className={control} onClick={p.cycleRepeat}
+              aria-label={`Chế độ lặp: ${p.repeat}`} title={p.repeat === "off" ? "Không lặp" : p.repeat === "all" ? "Lặp danh sách" : "Lặp một bài"}
+              style={{ color: p.repeat === "off" ? undefined : "#f2a65a" }}>
+              <i className={`bi ${p.repeat === "one" ? "bi-repeat-1" : "bi-repeat"}`} />
             </button>
           </div>
-          <div className="hidden items-center gap-2 sm:flex">
-            <span className="font-mono text-[11px] text-muted">1:24</span>
-            <div className="h-1 w-64 overflow-hidden rounded-full bg-raised">
-              <div className="h-full w-1/3 rounded-full bg-amber" />
-            </div>
-            {/* Song schema chưa có "duration" nên tạm hiển thị placeholder */}
-            <span className="font-mono text-[11px] text-muted">--:--</span>
+
+          <div className="hidden min-w-[115px] items-center justify-end gap-2 text-muted lg:flex">
+            <i className="bi bi-volume-up" aria-hidden="true" />
+            <input aria-label="Âm lượng" type="range" min="0" max="1" step="0.05" value={p.volume}
+              onChange={e => p.changeVolume(Number(e.target.value))} className="w-24 accent-[#f2a65a]" />
           </div>
         </div>
 
-        {/* Bên phải */}
-        <div className="hidden items-center gap-3 md:flex">
-          {isPlaying && <PlayingBars />}
-          <i className="bi bi-mic" />
-          <i className="bi bi-volume-up text-muted" />
-          <div className="h-1 w-20 overflow-hidden rounded-full bg-raised">
-            <div className="h-full w-2/3 rounded-full bg-ink" />
-          </div>
+        <div className="mt-1 flex items-center gap-2 font-mono text-[10px] text-muted sm:text-[11px]">
+          <span className="w-9 text-right">{formatTime(p.currentTime)}</span>
+          <input aria-label="Tiến độ phát nhạc" type="range" min="0" max={p.duration > 0 ? p.duration : 1} step="0.25"
+            value={Math.min(p.currentTime, p.duration > 0 ? p.duration : 1)} onChange={e => p.seekTo(Number(e.target.value))}
+            disabled={p.duration <= 0} className="min-w-0 flex-1 accent-[#f2a65a] disabled:opacity-40" />
+          <span className="w-9">{p.duration > 0 ? formatTime(p.duration) : "--:--"}</span>
         </div>
       </div>
-    </div>
+    </aside>
   );
 }

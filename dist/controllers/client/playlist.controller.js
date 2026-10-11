@@ -165,7 +165,7 @@ const addSong = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             res.status(404).json({ message: "Không tìm thấy bài hát" });
             return;
         }
-        const playlist = yield playlist_model_1.default.findOneAndUpdate({ _id: playlistId, userId: owner(res) }, { $addToSet: { songIds: songId } }, { new: true });
+        const playlist = yield playlist_model_1.default.findOneAndUpdate({ _id: playlistId, userId: owner(res) }, { $addToSet: { songIds: songId } }, { returnDocument: "after" });
         if (!playlist) {
             res.status(404).json({ message: "Không tìm thấy playlist" });
             return;
@@ -186,7 +186,7 @@ const removeSong = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         return;
     }
     try {
-        const playlist = yield playlist_model_1.default.findOneAndUpdate({ _id: playlistId, userId: owner(res) }, { $pull: { songIds: songId } }, { new: true });
+        const playlist = yield playlist_model_1.default.findOneAndUpdate({ _id: playlistId, userId: owner(res) }, { $pull: { songIds: songId } }, { returnDocument: "after" });
         if (!playlist) {
             res.status(404).json({ message: "Không tìm thấy playlist" });
             return;

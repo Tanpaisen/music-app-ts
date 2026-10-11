@@ -195,7 +195,7 @@ const favorite = (_req, res) => __awaiter(void 0, void 0, void 0, function* () {
 exports.favorite = favorite;
 const listenPatch = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const song = yield song_model_1.default.findOneAndUpdate({ slug: req.params.songSlug, deleted: false, status: "active" }, { $inc: { listen: 1 } }, { new: true });
+        const song = yield song_model_1.default.findOneAndUpdate({ slug: req.params.songSlug, deleted: false, status: "active" }, { $inc: { listen: 1 } }, { returnDocument: "after" });
         if (!song) {
             res.status(404).json({ code: 404, message: "Không tìm thấy bài hát" });
             return;

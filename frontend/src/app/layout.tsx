@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Fraunces, Inter, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
+import { PlayerProvider } from "@/components/player/PlayerProvider";
+import PlayerShell from "@/components/player/PlayerShell";
 
 const fraunces = Fraunces({
   subsets: ["latin", "vietnamese"],
@@ -33,7 +35,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           rel="stylesheet"
           href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"
         />
-        {children}
+        <PlayerProvider>
+          <PlayerShell>{children}</PlayerShell>
+        </PlayerProvider>
       </body>
     </html>
   );

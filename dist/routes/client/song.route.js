@@ -44,6 +44,8 @@ router.get("/like-state/:songId", authentication_middleware_1.requireAuth, contr
 router.get("/detail/:songSlug", controller.detail);
 router.patch("/like/:status/:songId", authentication_middleware_1.requireAuth, controller.like);
 router.patch("/favorite/:status/:songId", authentication_middleware_1.requireAuth, controller.favoritePatch);
-router.patch("/listen/:songSlug", controller.listenPatch);
+router.patch("/listen/:songSlug", (_req, res) => {
+    res.status(410).json({ code: "USE_LISTENING_API", message: "Sử dụng /api/listening/start và /api/listening/complete" });
+});
 router.get("/:songSlug", controller.list);
 exports.songRouter = router;

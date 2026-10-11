@@ -126,7 +126,7 @@ const update = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const userId = res.locals.authUserId;
         const user = res.locals.authUser;
-        const item = yield song_comment_model_1.default.findOneAndUpdate({ _id: commentId, userId }, { $set: { content } }, { new: true, runValidators: true });
+        const item = yield song_comment_model_1.default.findOneAndUpdate({ _id: commentId, userId }, { $set: { content } }, { returnDocument: "after", runValidators: true });
         if (!item) {
             res.status(404).json({ code: "NOT_FOUND", message: "Không tìm thấy bình luận của bạn" });
             return;

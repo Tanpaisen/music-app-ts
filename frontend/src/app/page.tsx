@@ -3,15 +3,12 @@ import TopBar from "@/components/layout/TopBar";
 import HeroFeatured from "@/components/home/HeroFeatured";
 import TopicCarousel from "@/components/home/TopicCarousel";
 import TrackTable from "@/components/home/TrackTable";
-import PlayerBar from "@/components/layout/PlayerBar";
 import WaveDivider from "@/components/ui/WaveDivider";
 import { getHomeData } from "@/lib/api/home";
 
 export default async function HomePage() {
   // Một lần gọi duy nhất tới GET /home, trả về cả 3 phần dữ liệu cần thiết
   const { featured, topTracks, newReleases } = await getHomeData();
-
-  const nowPlaying = topTracks[0];
 
   return (
     <div className="flex min-h-screen">
@@ -37,7 +34,6 @@ export default async function HomePage() {
 
         <WaveDivider />
 
-        <PlayerBar song={nowPlaying} />
       </div>
     </div>
   );

@@ -11,6 +11,7 @@ const comment_route_1 = require("./comment.route");
 const follow_route_1 = require("./follow.route");
 const catalog_route_1 = require("./catalog.route");
 const artist_route_1 = require("./artist.route");
+const listening_route_1 = require("./listening.route");
 const routeMain = (app) => {
     app.use('/', home_route_1.homeRouter);
     app.use('/home', home_route_1.homeRouter);
@@ -18,9 +19,10 @@ const routeMain = (app) => {
     app.use('/songs', song_route_1.songRouter);
     app.use('/api/playlists', playlist_route_1.playlistRouter);
     app.use('/api/comments', comment_route_1.commentRouter);
-    app.use("/api/catalog", catalog_route_1.catalogRouter);
-    app.use("/api/artists", artist_route_1.artistRouter);
     app.use('/api/follows', follow_route_1.followRouter);
+    app.use('/api/catalog', catalog_route_1.catalogRouter);
+    app.use('/api/artists', artist_route_1.artistRouter);
+    app.use('/api/listening', listening_route_1.listeningRouter);
     app.use('/search', search_route_1.searchRouter);
     app.use('/api/auth', auth_route_1.clientAuthRouter);
 };

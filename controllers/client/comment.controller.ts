@@ -128,7 +128,7 @@ export const update = async (req: Request, res: Response): Promise<void> => {
     const item = await SongComment.findOneAndUpdate(
       { _id: commentId, userId },
       { $set: { content } },
-      { new: true, runValidators: true }
+      { returnDocument: "after", runValidators: true }
     );
     if (!item) {
       res.status(404).json({ code: "NOT_FOUND", message: "Không tìm thấy bình luận của bạn" });

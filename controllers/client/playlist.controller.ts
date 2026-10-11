@@ -144,7 +144,7 @@ export const addSong = async (req: Request, res: Response): Promise<void> => {
     const playlist = await Playlist.findOneAndUpdate(
       { _id: playlistId, userId: owner(res) },
       { $addToSet: { songIds: songId } },
-      { new: true }
+      { returnDocument: "after" }
     );
     if (!playlist) { res.status(404).json({ message: "Không tìm thấy playlist" }); return; }
     res.json({ code: 200, message: "Đã thêm bài hát", data: summary(playlist, songId) });
@@ -165,7 +165,7 @@ export const removeSong = async (req: Request, res: Response): Promise<void> => 
     const playlist = await Playlist.findOneAndUpdate(
       { _id: playlistId, userId: owner(res) },
       { $pull: { songIds: songId } },
-      { new: true }
+      { returnDocument: "after" }
     );
     if (!playlist) { res.status(404).json({ message: "Không tìm thấy playlist" }); return; }
     res.json({ code: 200, message: "Đã bỏ bài hát khỏi playlist", data: summary(playlist, songId) });

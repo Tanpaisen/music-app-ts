@@ -9,6 +9,7 @@ import { commentRouter } from './comment.route'
 import { followRouter } from './follow.route'
 import { catalogRouter } from './catalog.route'
 import { artistRouter } from './artist.route'
+import { listeningRouter } from './listening.route'
 
 export const routeMain = (app: Express) => {
     app.use('/', homeRouter)
@@ -23,11 +24,13 @@ export const routeMain = (app: Express) => {
 
     app.use('/api/comments', commentRouter)
 
-    app.use("/api/catalog", catalogRouter);
-
-    app.use("/api/artists", artistRouter);
-
     app.use('/api/follows', followRouter)
+
+    app.use('/api/catalog', catalogRouter)
+
+    app.use('/api/artists', artistRouter)
+
+    app.use('/api/listening', listeningRouter)
 
     app.use('/search', searchRouter)
 
