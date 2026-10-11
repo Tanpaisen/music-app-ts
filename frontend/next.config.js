@@ -35,6 +35,10 @@ const nextConfig = {
         destination: `${BACKEND_URL}/api/playlists/:path*`,
       },
       {
+        source: "/api/comments/:path*",
+        destination: `${BACKEND_URL}/api/comments/:path*`,
+      },
+      {
         source: "/api/songs/:path*",
         destination: `${BACKEND_URL}/songs/:path*`,
       }

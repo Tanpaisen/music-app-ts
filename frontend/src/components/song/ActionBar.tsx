@@ -5,6 +5,7 @@ import { SongDetail } from "@/types/song";
 import { formatCompactNumber } from "@/lib/utils/format";
 import { useRouter } from "next/navigation";
 import PlaylistPicker from "./PlaylistPicker";
+import CommentPanel from "./CommentPanel";
 
 interface Props {
   song: SongDetail;
@@ -16,7 +17,7 @@ export default function ActionBar({ song }: Props) {
   const [following, setFollowing] = useState(false);
   const [showComment, setShowComment] = useState(false);
   const [showPlaylist, setShowPlaylist] = useState(false);
-  const [comment, setComment] = useState("");
+  const [commentCount, setCommentCount] = useState(0);
   const [copied, setCopied] = useState(false);
   const router = useRouter();
   const [likePending, setLikePending] = useState(false);
@@ -183,6 +184,26 @@ export default function ActionBar({ song }: Props) {
     }
   };
 
+  // Tổng bình luận công khai, không cần đăng nhập để xem.
+  useEffect(() => {
+    const controller = new AbortController();
+    setCommentCount(0);
+    const loadCount = async () => {
+      try {
+        const response = await fetch(`/api/comments/song/${song._id}/count`, {
+          credentials: "same-origin", cache: "no-store", signal: controller.signal,
+        });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const result: { count?: number } = await response.json();
+        if (!controller.signal.aborted) setCommentCount(result.count ?? 0);
+      } catch (cause) {
+        if (!controller.signal.aborted) console.error("[Comment/count]", cause);
+      }
+    };
+    void loadCount();
+    return () => controller.abort();
+  }, [song._id]);
+
   const handleShare = () => {
     navigator.clipboard.writeText(window.location.href).catch(() => {});
     setCopied(true);
@@ -235,7 +256,7 @@ export default function ActionBar({ song }: Props) {
           aria-label="Bình luận"
         >
           <i className="bi bi-chat-heart text-[21px]" />
-          <span className="font-mono text-[11px] text-[#444]">248</span>
+          <span className="font-mono text-[11px] text-[#444]">{formatCompactNumber(commentCount)}</span>
         </button>
 
         {/* Theo dõi */}
@@ -278,43 +299,8 @@ export default function ActionBar({ song }: Props) {
       {/* Playlist riêng của tài khoản - lấy trực tiếp từ MongoDB qua API */}
       {showPlaylist && <PlaylistPicker songId={song._id} />}
 
-      {/* Box comment */}
-      {showComment && (
-        <div className="mt-2 rounded-xl border border-[#222] bg-[#141414] p-3">
-          <p className="mb-3 text-[11px] uppercase tracking-widest text-[#444]">Bình luận (248)</p>
-          <div className="mb-3 flex flex-col gap-2.5">
-            {[
-              { name: "@user_123", text: "Bài này hay quá 🔥", bg: "#2a1a3a" },
-              { name: "@music_lover", text: "Nghe mãi không chán 💚", bg: "#1a2a1a" },
-            ].map((c, i) => (
-              <div key={i} className="flex gap-2">
-                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[11px] text-[#888]"
-                  style={{ background: c.bg }}>
-                  {c.name[1].toUpperCase()}
-                </div>
-                <div className="rounded-xl bg-[#1e1e1e] px-3 py-2">
-                  <p className="text-[12px] font-medium text-[#bbb]">{c.name}</p>
-                  <p className="text-[12px] text-[#666]">{c.text}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-          <div className="flex gap-2">
-            <input
-              value={comment}
-              onChange={(e) => setComment(e.target.value)}
-              placeholder="Thêm bình luận..."
-              className="flex-1 rounded-lg border border-[#2a2a2a] bg-[#1e1e1e] px-3 py-2 text-[12px] text-[#bbb] outline-none focus:border-[#4ade80]"
-            />
-            <button
-              onClick={() => setComment("")}
-              className="rounded-lg bg-[#4ade80] px-3 py-2 text-[13px] font-medium text-[#050f0a]"
-            >
-              Gửi
-            </button>
-          </div>
-        </div>
-      )}
+      {/* Bình luận thật, công khai để xem, xác thực khi thêm/sửa/xóa */}
+      {showComment && <CommentPanel key={song._id} songId={song._id} onCountChange={setCommentCount} />}
     </div>
   );
 }

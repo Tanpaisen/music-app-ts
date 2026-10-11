@@ -7,12 +7,14 @@ const search_route_1 = require("./search.route");
 const home_route_1 = require("../client/home.route");
 const auth_route_1 = require("./auth.route");
 const playlist_route_1 = require("./playlist.route");
+const comment_route_1 = require("./comment.route");
 const routeMain = (app) => {
     app.use('/', home_route_1.homeRouter);
     app.use('/home', home_route_1.homeRouter);
     app.use('/topics', topic_route_1.topicRouter);
     app.use('/songs', song_route_1.songRouter);
     app.use('/api/playlists', playlist_route_1.playlistRouter);
+    app.use('/api/comments', comment_route_1.commentRouter);
     app.use('/search', search_route_1.searchRouter);
     app.use('/api/auth', auth_route_1.clientAuthRouter);
 };
