@@ -8,6 +8,7 @@ import { playlistRouter } from './playlist.route'
 import { commentRouter } from './comment.route'
 import { followRouter } from './follow.route'
 import { artistRouter } from './artist.route'
+import { catalogRouter } from "./catalog.route";
 
 export const routeMain = (app: Express) => {
     app.use('/', homeRouter)
@@ -27,6 +28,8 @@ export const routeMain = (app: Express) => {
     app.use('/api/artists', artistRouter)
 
     app.use('/search', searchRouter)
+
+    app.use('/api/catalog', catalogRouter)
 
     app.use('/api/auth', clientAuthRouter)
 

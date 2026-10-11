@@ -49,7 +49,11 @@ const nextConfig = {
       {
         source: "/api/songs/:path*",
         destination: `${BACKEND_URL}/songs/:path*`,
-      }
+      },
+      {
+        source: "/api/catalog/:path*",
+        destination: `${BACKEND_URL}/api/catalog/:path*`,
+      },
     ];
   },
 };

@@ -3,8 +3,7 @@ import Link from "next/link";
 import { Topic } from "@/types/home";
 
 // Dùng Topic thay cho "Playlist" vì project chưa có model Playlist riêng.
-// Link trỏ tới /songs/[topicSlug] — đúng route GET /songs/:songSlug trong song.controller.ts,
-// nơi :songSlug thực chất nhận slug của Topic để liệt kê bài hát theo chủ đề.
+// Trang công khai /topics/[topicSlug] hiển thị bài hát theo chủ đề bằng API JSON.
 export default function TopicCarousel({ topics }: { topics: Topic[] }) {
   if (topics.length === 0) return null;
 
