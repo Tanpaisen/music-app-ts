@@ -1,0 +1,29 @@
+extends ../../layouts/default.pug
+
+block main
+  h1.mb-4= pageTitle
+  form(method=method action=action)
+    .form-group
+      label(for="key") Mã danh mục (slug, không dấu)
+      input#key.form-control(type="text" name="key" required=!category readonly=Boolean(category) pattern="[a-z0-9]+(-[a-z0-9]+)*" maxlength="80" value=category ? category.key : '' placeholder="vd: nhac-phim")
+      small.form-text.text-muted Mã chỉ dùng chữ thường, số và gạch ngang. Không đổi sau khi tạo để giữ liên kết với các chủ đề.
+    .form-group
+      label(for="label") Tên danh mục
+      input#label.form-control(type="text" name="label" required maxlength="120" value=category ? category.label : '' placeholder="Ví dụ: Nhạc phim")
+    .form-group
+      label(for="description") Mô tả
+      textarea#description.form-control(name="description" rows="3" maxlength="500")= category ? category.description : ''
+    .form-group
+      label(for="coverImage") URL ảnh đại diện (tùy chọn)
+      input#coverImage.form-control(type="url" name="coverImage" value=category ? category.coverImage : '' placeholder="https://...")
+    .form-group
+      label(for="sortOrder") Thứ tự hiển thị (nhỏ đứng trước)
+      input#sortOrder.form-control(type="number" name="sortOrder" min="0" max="9999" value=category ? category.sortOrder : 0)
+    .form-group
+      label(for="status") Trạng thái
+      select#status.form-control(name="status")
+        option(value="active" selected=!category || category.status === 'active') Hoạt động
+        if !category || category.key !== 'khac'
+          option(value="inactive" selected=Boolean(category && category.status === 'inactive')) Ẩn
+    button.btn.btn-primary(type="submit")= category ? 'Lưu thay đổi' : 'Tạo danh mục'
+    a.btn.btn-outline-secondary.ml-2(href=`/${prefixAdmin}/topic-categories`) Quay lại

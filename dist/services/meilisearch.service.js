@@ -69,7 +69,7 @@ exports.getPlaylistIndex = getPlaylistIndex;
 const SETTINGS = {
     songs: { searchableAttributes: ["title", "fullName", "slug"], filterableAttributes: ["status", "deleted"] },
     artists: { searchableAttributes: ["fullName", "slug"], filterableAttributes: ["status", "deleted"] },
-    topics: { searchableAttributes: ["title", "description", "slug"], filterableAttributes: ["status", "deleted"] },
+    topics: { searchableAttributes: ["title", "description", "slug"], filterableAttributes: ["status", "deleted", "categoryKey"] },
     playlists: { searchableAttributes: ["name", "description"], filterableAttributes: ["userId"] },
 };
 const ready = new Map();
@@ -122,7 +122,7 @@ const songDoc = (song, singer) => { var _a, _b, _c, _d, _e, _f, _g; return ({
     fullName: (_f = singer === null || singer === void 0 ? void 0 : singer.fullName) !== null && _f !== void 0 ? _f : "", status: (_g = song.status) !== null && _g !== void 0 ? _g : "", deleted: Boolean(song.deleted),
 }); };
 const artistDoc = (s) => { var _a, _b, _c, _d; return ({ id: String(s._id), fullName: (_a = s.fullName) !== null && _a !== void 0 ? _a : "", slug: (_b = s.slug) !== null && _b !== void 0 ? _b : "", avatar: (_c = s.avatar) !== null && _c !== void 0 ? _c : "", status: (_d = s.status) !== null && _d !== void 0 ? _d : "", deleted: Boolean(s.deleted) }); };
-const topicDoc = (t) => { var _a, _b, _c, _d, _e; return ({ id: String(t._id), title: (_a = t.title) !== null && _a !== void 0 ? _a : "", slug: (_b = t.slug) !== null && _b !== void 0 ? _b : "", avatar: (_c = t.avatar) !== null && _c !== void 0 ? _c : "", description: (_d = t.description) !== null && _d !== void 0 ? _d : "", status: (_e = t.status) !== null && _e !== void 0 ? _e : "", deleted: Boolean(t.deleted) }); };
+const topicDoc = (t) => { var _a, _b, _c, _d, _e, _f; return ({ id: String(t._id), title: (_a = t.title) !== null && _a !== void 0 ? _a : "", slug: (_b = t.slug) !== null && _b !== void 0 ? _b : "", avatar: (_c = t.avatar) !== null && _c !== void 0 ? _c : "", description: (_d = t.description) !== null && _d !== void 0 ? _d : "", categoryKey: (_e = t.categoryKey) !== null && _e !== void 0 ? _e : "khac", status: (_f = t.status) !== null && _f !== void 0 ? _f : "", deleted: Boolean(t.deleted) }); };
 const playlistDoc = (p) => { var _a; var _b, _c, _d; return ({ id: String(p._id), userId: String(p.userId), name: (_b = p.name) !== null && _b !== void 0 ? _b : "", description: (_c = p.description) !== null && _c !== void 0 ? _c : "", songCount: (_d = (_a = p.songIds) === null || _a === void 0 ? void 0 : _a.length) !== null && _d !== void 0 ? _d : 0 }); };
 function refreshSong(id) {
     return __awaiter(this, void 0, void 0, function* () {

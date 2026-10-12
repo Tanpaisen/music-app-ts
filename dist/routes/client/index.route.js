@@ -9,6 +9,7 @@ const auth_route_1 = require("./auth.route");
 const playlist_route_1 = require("./playlist.route");
 const comment_route_1 = require("./comment.route");
 const follow_route_1 = require("./follow.route");
+const album_route_1 = require("./album.route");
 const catalog_route_1 = require("./catalog.route");
 const artist_route_1 = require("./artist.route");
 const listening_route_1 = require("./listening.route");
@@ -20,6 +21,7 @@ const routeMain = (app) => {
     app.use('/api/playlists', playlist_route_1.playlistRouter);
     app.use('/api/comments', comment_route_1.commentRouter);
     app.use('/api/follows', follow_route_1.followRouter);
+    app.use('/api/albums', album_route_1.albumRouter);
     app.use('/api/catalog', catalog_route_1.catalogRouter);
     app.use('/api/artists', artist_route_1.artistRouter);
     app.use('/api/listening', listening_route_1.listeningRouter);

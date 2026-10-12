@@ -30,6 +30,7 @@ type PlayerContextValue = {
   repeat: RepeatMode;
   recommendationsLoading: boolean;
   playSong: (song: PlayableTrack) => void;
+  playCollection: (songs: PlayableTrack[], index?: number) => void;
   playAt: (index: number) => void;
   togglePlay: () => void;
   nextSong: () => void;
@@ -160,6 +161,19 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     startTrack(song);
     void loadRecommendations(song, seq);
   }, [loadRecommendations, setQueueValue, startTrack]);
+
+  // Phát trọn album/collection theo thứ tự. Không gọi API gợi ý vì queue của album đã được xác định.
+  const playCollection = useCallback((songs: PlayableTrack[], index = 0) => {
+    const playable = songs.filter(s => Boolean(s._id && s.audio));
+    if (!playable.length) return;
+    const safeIndex = Math.max(0, Math.min(index, playable.length - 1));
+    ++loadSeqRef.current; // loại bỏ request gợi ý của bài trước nếu còn đang chờ
+    setRecommendationsLoading(false);
+    const ordered = shuffleRef.current ? shuffleTail(playable, safeIndex + 1) : playable;
+    setQueueValue(ordered);
+    indexRef.current = safeIndex;
+    startTrack(ordered[safeIndex]);
+  }, [setQueueValue, startTrack]);
 
   const playAt = useCallback((index: number) => {
     const selected = queueRef.current[index];
@@ -314,7 +328,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   return (
     <PlayerContext.Provider value={{
       track, queue, isPlaying, currentTime, duration, volume, shuffle, repeat, recommendationsLoading,
-      playSong, playAt, togglePlay, nextSong, previousSong, toggleShuffle, cycleRepeat, seekTo, changeVolume,
+      playSong, playCollection, playAt, togglePlay, nextSong, previousSong, toggleShuffle, cycleRepeat, seekTo, changeVolume,
     }}>
       {children}
       <audio

@@ -1,0 +1,45 @@
+extends ../../layouts/default.pug
+block main
+  h1.mb-4= pageTitle
+  .card
+    .card-header.d-flex.justify-content-between.align-items-center
+      span Danh sách album
+      if role.permissions.includes('songs_create')
+        a.btn.btn-outline-success.btn-sm(href=`/${prefixAdmin}/albums/create`) + Thêm album
+    .card-body
+      .table-responsive
+        table.table.table-hover.table-sm
+          thead
+            tr
+              th STT
+              th Bìa
+              th Tên album
+              th Ca sĩ
+              th Bài hát
+              th Trạng thái
+              th Hành động
+          tbody
+            each album, index in albums
+              tr
+                td= index + 1
+                td
+                  if album.avatar
+                    img(src=album.avatar alt=album.title width="72" height="72" style="object-fit:cover;border-radius:8px")
+                td
+                  strong= album.title
+                td= singerMap[String(album.singerId || '')] || 'Chưa cập nhật'
+                td= counts[String(album._id)] || 0
+                td
+                  if album.status === 'active'
+                    span.badge.badge-success Hoạt động
+                  else
+                    span.badge.badge-secondary Đang ẩn
+                td
+                  if role.permissions.includes('songs_edit')
+                    a.btn.btn-warning.btn-sm.mr-2(href=`/${prefixAdmin}/albums/edit/${album._id}`) Sửa
+                  if role.permissions.includes('songs_delete')
+                    form.d-inline(method="POST" action=`/${prefixAdmin}/albums/delete/${album._id}?_method=DELETE` onsubmit="return confirm('Xóa album này? Album có bài hát sẽ không xóa được.')")
+                      button.btn.btn-danger.btn-sm(type="submit") Xóa
+            if !albums.length
+              tr
+                td.text-muted.text-center(colspan="7") Chưa có album nào

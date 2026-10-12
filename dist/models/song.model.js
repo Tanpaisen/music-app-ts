@@ -48,6 +48,8 @@ const songSchema = new mongoose_1.default.Schema({
         ref: "Singer"
     },
     topicId: String,
+    albumId: { type: String, default: "", index: true },
+    trackNumber: { type: Number, default: 0, min: 0 },
     like: { type: Number, default: 0, min: 0 },
     listen: {
         type: Number,

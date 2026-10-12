@@ -2,6 +2,8 @@ import { Express } from 'express'
 import {dashboardRouter} from './dashboard.route'
 import { systemConfig } from '../../config/system'
 import { topicRouter } from './topics.route';
+import { albumRouter } from "./album.route";
+import { topicCategoryRouter } from './topic-categories.route';
 import { songRouter } from './song.route';
 import { uploadRouter } from './upload.route';
 import { singerRouter } from './singer.route';
@@ -16,6 +18,10 @@ export const routeAdmin = (app: Express) => {
     app.use(`/${path}/dashboard`, authMiddleware.requireAuth, dashboardRouter)
 
     app.use(`/${path}/topics`, authMiddleware.requireAuth, topicRouter)
+
+    app.use(`/${path}/topic-categories`, authMiddleware.requireAuth, topicCategoryRouter)
+
+    app.use(`/${path}/albums`, authMiddleware.requireAuth, albumRouter)
 
     app.use(`/${path}/songs`, authMiddleware.requireAuth, songRouter)
 

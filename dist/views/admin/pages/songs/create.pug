@@ -40,6 +40,16 @@ block main
             option(value="" disabled selected) -- Chọn ca sĩ --
             each item in singers
               option(value=item.id) #{item.fullName}
+        .form-group
+          label(for="albumId") Album (không bắt buộc)
+          select#albumId.form-control(name="albumId")
+            option(value="" selected=true) Không thuộc album
+            each album in albums
+              option(value=album.id selected=false)= album.title + (album.status === 'inactive' ? ' (đang ẩn)' : '')
+          small.form-text.text-muted Tạo album trong mục Quản lý album trước, sau đó gán bài hát vào album.
+        .form-group
+          label(for="trackNumber") Số thứ tự bài trong album (1, 2, 3...)
+          input#trackNumber.form-control(type="number" name="trackNumber" min="0" max="999" value=0)
         div(
           class="form-group"
           upload-image

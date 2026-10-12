@@ -1,0 +1,32 @@
+extends ../../layouts/default.pug
+block main
+  h1.mb-4= pageTitle
+  form(method="POST" action=action enctype="multipart/form-data")
+    .form-group
+      label(for="title") Tên album
+      input#title.form-control(type="text" name="title" required maxlength="160" value=album ? album.title : '' placeholder="Ví dụ: Album mùa hè")
+    .form-group
+      label(for="singerId") Nghệ sĩ chính
+      select#singerId.form-control(name="singerId")
+        option(value="" selected=!album || !album.singerId) -- Chưa chọn --
+        each singer in singers
+          option(value=singer.id selected=Boolean(album && String(album.singerId) === singer.id))= singer.fullName
+    .form-group
+      label(for="avatar") Ảnh bìa album
+      div(upload-image)
+        input#avatar.form-control-file(type="file" name="avatar" accept="image/*" upload-image-input)
+        img.image-preview(src=album && album.avatar ? album.avatar : '' alt="Ảnh bìa album" upload-image-preview)
+    .form-group
+      label(for="releaseDate") Ngày phát hành
+      input#releaseDate.form-control(type="date" name="releaseDate" value=album && album.releaseDate ? new Date(album.releaseDate).toISOString().slice(0, 10) : '')
+    .form-group
+      label(for="description") Mô tả album
+      textarea#description.form-control(name="description" rows="4")= album ? album.description : ''
+    .form-group
+      label(for="status") Trạng thái
+      select#status.form-control(name="status")
+        option(value="active" selected=!album || album.status === 'active') Hoạt động
+        option(value="inactive" selected=Boolean(album && album.status === 'inactive')) Đang ẩn
+    button.btn.btn-primary(type="submit")= album ? 'Lưu album' : 'Tạo album'
+    a.btn.btn-outline-secondary.ml-2(href=`/${prefixAdmin}/albums`) Quay lại
+    p.text-muted.mt-3 Sau khi tạo, mở Quản lý bài hát → Sửa bài hát để chọn album. Không xóa được album đang chứa bài hát.

@@ -5,6 +5,8 @@ block main
     h1(class="mb-4") #{pageTitle}
 
 
+    a.btn.btn-outline-primary.mb-3(href=`/${prefixAdmin}/topic-categories`) Quản lý danh mục chủ đề
+
     .card.mb-3
         .card-header Danh sách
         .card-body
@@ -26,6 +28,8 @@ block main
                 th STT
                 th Hình ảnh
                 th Tiêu đề
+                th Danh mục
+                th Nổi bật
                 th Trạng thái
                 th Hành động
 
@@ -41,6 +45,8 @@ block main
                       height="auto"
                     )
                   td #{item.title}
+                  td #{categoryLabels[item.categoryKey] || 'Các chủ đề khác'}
+                  td #{item.featured ? 'Có' : '—'}
                   td
                     if(role.permissions.includes('topics_edit')) 
                       if (item.status === "active")

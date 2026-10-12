@@ -17,7 +17,7 @@ type Kind = "songs" | "artists" | "topics" | "playlists";
 const SETTINGS: Record<Kind, { searchableAttributes: string[]; filterableAttributes: string[] }> = {
   songs: { searchableAttributes: ["title", "fullName", "slug"], filterableAttributes: ["status", "deleted"] },
   artists: { searchableAttributes: ["fullName", "slug"], filterableAttributes: ["status", "deleted"] },
-  topics: { searchableAttributes: ["title", "description", "slug"], filterableAttributes: ["status", "deleted"] },
+  topics: { searchableAttributes: ["title", "description", "slug"], filterableAttributes: ["status", "deleted", "categoryKey"] },
   playlists: { searchableAttributes: ["name", "description"], filterableAttributes: ["userId"] },
 };
 
@@ -65,7 +65,7 @@ const songDoc = (song: any, singer: any) => ({
   fullName: singer?.fullName ?? "", status: song.status ?? "", deleted: Boolean(song.deleted),
 });
 const artistDoc = (s: any) => ({ id: String(s._id), fullName: s.fullName ?? "", slug: s.slug ?? "", avatar: s.avatar ?? "", status: s.status ?? "", deleted: Boolean(s.deleted) });
-const topicDoc = (t: any) => ({ id: String(t._id), title: t.title ?? "", slug: t.slug ?? "", avatar: t.avatar ?? "", description: t.description ?? "", status: t.status ?? "", deleted: Boolean(t.deleted) });
+const topicDoc = (t: any) => ({ id: String(t._id), title: t.title ?? "", slug: t.slug ?? "", avatar: t.avatar ?? "", description: t.description ?? "", categoryKey: t.categoryKey ?? "khac", status: t.status ?? "", deleted: Boolean(t.deleted) });
 const playlistDoc = (p: any) => ({ id: String(p._id), userId: String(p.userId), name: p.name ?? "", description: p.description ?? "", songCount: p.songIds?.length ?? 0 });
 
 export async function refreshSong(id: string) {

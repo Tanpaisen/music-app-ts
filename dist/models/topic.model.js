@@ -37,12 +37,20 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = __importDefault(require("mongoose"));
+const topic_categories_1 = require("../config/topic-categories");
 const mongoose_slug_updater_1 = __importDefault(require("mongoose-slug-updater"));
 mongoose_1.default.plugin(mongoose_slug_updater_1.default);
 const topicSchema = new mongoose_1.default.Schema({
     title: String,
     avatar: String,
     description: String,
+    categoryKey: {
+        type: String,
+        default: topic_categories_1.DEFAULT_TOPIC_CATEGORY,
+        index: true,
+    },
+    featured: { type: Boolean, default: false },
+    sortOrder: { type: Number, default: 0, min: 0 },
     status: String,
     slug: {
         type: String,
@@ -57,6 +65,7 @@ const topicSchema = new mongoose_1.default.Schema({
 }, {
     timestamps: true
 });
+topicSchema.index({ deleted: 1, status: 1, categoryKey: 1, sortOrder: 1 });
 function queueIndex(id) {
     Promise.resolve().then(() => __importStar(require("../services/meilisearch.service"))).then(m => {
         m.scheduleMeiliRefresh("topic:" + id, () => m.refreshTopic(id));

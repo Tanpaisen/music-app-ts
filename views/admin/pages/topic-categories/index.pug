@@ -1,0 +1,53 @@
+extends ../../layouts/default.pug
+
+block main
+  if role && role.permissions.includes('topics_view')
+    .d-flex.justify-content-between.align-items-center.mb-4
+      h1.mb-0= pageTitle
+      if role.permissions.includes('topics_create')
+        a.btn.btn-success(href=`/${prefixAdmin}/topic-categories/create`) + Thêm danh mục
+    .card
+      .card-body
+        .table-responsive
+          table.table.table-striped.table-hover
+            thead
+              tr
+                th STT
+                th Ảnh bìa
+                th Mã
+                th Tên danh mục
+                th Mô tả
+                th Chủ đề
+                th Thứ tự
+                th Trạng thái
+                th Hành động
+            tbody
+              each category, index in categories
+                tr
+                  td= index + 1
+                  td
+                    if category.coverImage
+                      img(src=category.coverImage alt=category.label width="90" height="55" style="object-fit: cover; border-radius: 6px;")
+                    else
+                      | —
+                  td
+                    code= category.key
+                  td= category.label
+                  td= category.description || '—'
+                  td= counter[category.key] || 0
+                  td= category.sortOrder
+                  td
+                    if category.status === 'active'
+                      span.badge.badge-success Hoạt động
+                    else
+                      span.badge.badge-secondary Đã ẩn
+                  td
+                    if role.permissions.includes('topics_edit')
+                      a.btn.btn-warning.btn-sm.mr-1(href=`/${prefixAdmin}/topic-categories/edit/${category._id}`) Sửa
+                    if role.permissions.includes('topics_delete') && category.key !== 'khac' && !(counter[category.key] > 0)
+                      form.d-inline(method="POST" action=`/${prefixAdmin}/topic-categories/delete/${category._id}?_method=DELETE` onsubmit="return confirm('Xóa danh mục này?')")
+                        button.btn.btn-danger.btn-sm(type="submit") Xóa
+              if !categories.length
+                tr
+                  td.text-center.text-muted(colspan="9") Chưa có danh mục
+    p.text-muted.mt-3 Danh mục đang chứa chủ đề không thể xóa hoặc ẩn. Mã danh mục không thay đổi sau khi tạo.

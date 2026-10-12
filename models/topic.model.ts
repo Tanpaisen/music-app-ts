@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { DEFAULT_TOPIC_CATEGORY } from '../config/topic-categories';
 // @ts-ignore
 import slug from 'mongoose-slug-updater';
 mongoose.plugin(slug);
@@ -7,6 +8,13 @@ const topicSchema = new mongoose.Schema({
     title: String,
     avatar: String,
     description: String,
+    categoryKey: {
+        type: String,
+        default: DEFAULT_TOPIC_CATEGORY,
+        index: true,
+    },
+    featured: { type: Boolean, default: false },
+    sortOrder: { type: Number, default: 0, min: 0 },
     status: String,
     slug: {
         type: String,
@@ -21,6 +29,7 @@ const topicSchema = new mongoose.Schema({
 }, {
     timestamps: true
 });
+topicSchema.index({ deleted: 1, status: 1, categoryKey: 1, sortOrder: 1 });
 // Incremental index refresh after DB writes. MongoDB always remains the source of truth.
 // Dynamic import avoids cycles while models are being initialized.
 function queueIndex(id: string) {

@@ -12,12 +12,14 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.liked = exports.topicDetail = exports.topics = exports.artists = void 0;
+exports.liked = exports.topicDetail = exports.topicGroups = exports.topics = exports.artists = void 0;
 const mongoose_1 = __importDefault(require("mongoose"));
 const singer_model_1 = __importDefault(require("../../models/singer.model"));
 const topic_model_1 = __importDefault(require("../../models/topic.model"));
 const song_model_1 = __importDefault(require("../../models/song.model"));
 const song_like_model_1 = __importDefault(require("../../models/song-like.model"));
+const topic_categories_1 = require("../../config/topic-categories");
+const topic_category_service_1 = require("../../services/topic-category.service");
 const meilisearch_service_1 = require("../../services/meilisearch.service");
 function pageOptions(req) {
     const rawPage = Number(req.query.page);
@@ -62,19 +64,27 @@ const topics = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { page, limit, skip } = pageOptions(req);
         const q = keyword(req);
+        const category = typeof req.query.category === "string" ? req.query.category : "";
+        if (category && !(yield (0, topic_category_service_1.categoryExists)(category))) {
+            res.status(400).json({ message: "Danh mục không hợp lệ" });
+            return;
+        }
         let data, total;
         if (q) {
             yield (0, meilisearch_service_1.ensureMeiliIndex)("topics");
             const result = yield (0, meilisearch_service_1.getMeiliClient)().index("topics").search(q, {
-                filter: 'deleted = false AND status = "active"', offset: skip, limit,
+                filter: `deleted = false AND status = "active"${category ? (category === "khac" ? ' AND (categoryKey = "khac" OR categoryKey IS NULL)' : ` AND categoryKey = "${category}"`) : ""}`,
+                offset: skip, limit,
             });
-            data = result.hits.map((hit) => ({ _id: hit.id, title: hit.title, slug: hit.slug, avatar: hit.avatar, description: hit.description }));
+            data = result.hits.map((hit) => ({ _id: hit.id, title: hit.title, slug: hit.slug, avatar: hit.avatar, description: hit.description, categoryKey: hit.categoryKey || topic_categories_1.DEFAULT_TOPIC_CATEGORY }));
             total = (_a = result.estimatedTotalHits) !== null && _a !== void 0 ? _a : data.length;
         }
         else {
             const filter = { deleted: false, status: "active" };
+            if (category)
+                filter.categoryKey = category === "khac" ? { $in: ["khac", null] } : category;
             [data, total] = yield Promise.all([
-                topic_model_1.default.find(filter).select("title description slug avatar").sort({ title: 1, _id: 1 }).skip(skip).limit(limit).lean(),
+                topic_model_1.default.find(filter).select("title description slug avatar categoryKey featured sortOrder").sort({ sortOrder: 1, title: 1, _id: 1 }).skip(skip).limit(limit).lean(),
                 topic_model_1.default.countDocuments(filter),
             ]);
         }
@@ -87,6 +97,31 @@ const topics = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
 });
 exports.topics = topics;
+const topicGroups = (_req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const visible = { deleted: false, status: "active" };
+        const categories = yield (0, topic_category_service_1.listCategories)(true);
+        const groups = yield Promise.all(categories.map((category) => __awaiter(void 0, void 0, void 0, function* () {
+            const filter = Object.assign(Object.assign({}, visible), { categoryKey: category.key === "khac" ? { $in: ["khac", null] } : category.key });
+            const [items, total] = yield Promise.all([
+                topic_model_1.default.find(filter).select("title slug avatar description categoryKey featured sortOrder")
+                    .sort({ sortOrder: 1, createdAt: -1 }).limit(6).lean(),
+                topic_model_1.default.countDocuments(filter),
+            ]);
+            return Object.assign(Object.assign({}, category), { total, topics: items });
+        })));
+        const featured = yield topic_model_1.default.find(Object.assign(Object.assign({}, visible), { featured: true }))
+            .select("title slug avatar description categoryKey sortOrder")
+            .sort({ sortOrder: 1, createdAt: -1 }).limit(8).lean();
+        res.setHeader("Cache-Control", "no-store");
+        res.json({ code: 200, featured, groups: groups.filter(g => g.total > 0) });
+    }
+    catch (error) {
+        console.error("[catalog/topicGroups]", error);
+        res.status(500).json({ message: "Không thể tải các nhóm chủ đề" });
+    }
+});
+exports.topicGroups = topicGroups;
 const topicDetail = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { page, limit, skip } = pageOptions(req);

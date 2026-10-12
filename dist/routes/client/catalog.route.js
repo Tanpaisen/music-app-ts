@@ -40,5 +40,6 @@ const controller = __importStar(require("../../controllers/client/catalog.contro
 exports.catalogRouter = (0, express_1.Router)();
 exports.catalogRouter.get("/artists", controller.artists);
 exports.catalogRouter.get("/topics", controller.topics);
+exports.catalogRouter.get("/topics/groups", controller.topicGroups);
 exports.catalogRouter.get("/topics/:topicSlug", controller.topicDetail);
 exports.catalogRouter.get("/liked", authentication_middleware_1.requireAuth, controller.liked);

@@ -11,6 +11,7 @@ const publicItems = [
   { label: "Tìm kiếm", href: "/search", icon: "bi-search" },
   { label: "Ca sĩ", href: "/artists", icon: "bi-mic" },
   { label: "Chủ đề", href: "/topics", icon: "bi-grid-1x2" },
+  { label: "Album", href: "/albums", icon: "bi-vinyl" },
 ];
 
 const privateItems = [
