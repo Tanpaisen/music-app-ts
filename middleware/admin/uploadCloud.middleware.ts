@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { uploadToCloudinary } from "../helpers/uploadToCloudinary";
+import { uploadToCloudinary } from "../../helpers/uploadToCloudinary";
 
 export const uploadSingle = async (
   req: Request,

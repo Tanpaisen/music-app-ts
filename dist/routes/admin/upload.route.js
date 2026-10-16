@@ -39,7 +39,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.uploadRouter = void 0;
 const express_1 = require("express");
 const multer_1 = __importDefault(require("multer"));
-const uploadCloud = __importStar(require("../../middleware/uploadCloud.middleware"));
+const uploadCloud = __importStar(require("../../middleware/admin/uploadCloud.middleware"));
 const upload = (0, multer_1.default)();
 const controller = __importStar(require("../../controllers/admin/upload.controller"));
 const router = (0, express_1.Router)();

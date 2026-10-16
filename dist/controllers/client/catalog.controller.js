@@ -1,0 +1,183 @@
+"use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.liked = exports.topicDetail = exports.topicGroups = exports.topics = exports.artists = void 0;
+const mongoose_1 = __importDefault(require("mongoose"));
+const singer_model_1 = __importDefault(require("../../models/singer.model"));
+const topic_model_1 = __importDefault(require("../../models/topic.model"));
+const song_model_1 = __importDefault(require("../../models/song.model"));
+const song_like_model_1 = __importDefault(require("../../models/song-like.model"));
+const topic_categories_1 = require("../../config/topic-categories");
+const topic_category_service_1 = require("../../services/topic-category.service");
+const meilisearch_service_1 = require("../../services/meilisearch.service");
+function pageOptions(req) {
+    const rawPage = Number(req.query.page);
+    const rawLimit = Number(req.query.limit);
+    const page = Number.isSafeInteger(rawPage) && rawPage > 0 ? Math.min(rawPage, 100000) : 1;
+    const limit = Number.isSafeInteger(rawLimit) && rawLimit > 0 ? Math.min(rawLimit, 36) : 12;
+    return { page, limit, skip: (page - 1) * limit };
+}
+const keyword = (req) => typeof req.query.q === "string" ? req.query.q.trim().slice(0, 100) : "";
+const artists = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    try {
+        const { page, limit, skip } = pageOptions(req);
+        const q = keyword(req);
+        let data, total;
+        if (q) {
+            yield (0, meilisearch_service_1.ensureMeiliIndex)("artists");
+            const result = yield (0, meilisearch_service_1.getMeiliClient)().index("artists").search(q, {
+                filter: 'deleted = false AND status = "active"', offset: skip, limit,
+            });
+            data = result.hits.map((hit) => ({ _id: hit.id, fullName: hit.fullName, avatar: hit.avatar, slug: hit.slug }));
+            total = (_a = result.estimatedTotalHits) !== null && _a !== void 0 ? _a : data.length;
+        }
+        else {
+            const filter = { deleted: false, status: "active" };
+            [data, total] = yield Promise.all([
+                singer_model_1.default.find(filter).select("fullName avatar slug").sort({ fullName: 1, _id: 1 }).skip(skip).limit(limit).lean(),
+                singer_model_1.default.countDocuments(filter),
+            ]);
+        }
+        res.setHeader("Cache-Control", "no-store");
+        res.json({ code: 200, data, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } });
+    }
+    catch (error) {
+        console.error("[catalog/artists]", error);
+        res.status(500).json({ message: "Không thể tải danh sách ca sĩ" });
+    }
+});
+exports.artists = artists;
+const topics = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    try {
+        const { page, limit, skip } = pageOptions(req);
+        const q = keyword(req);
+        const category = typeof req.query.category === "string" ? req.query.category : "";
+        if (category && !(yield (0, topic_category_service_1.categoryExists)(category))) {
+            res.status(400).json({ message: "Danh mục không hợp lệ" });
+            return;
+        }
+        let data, total;
+        if (q) {
+            yield (0, meilisearch_service_1.ensureMeiliIndex)("topics");
+            const result = yield (0, meilisearch_service_1.getMeiliClient)().index("topics").search(q, {
+                filter: `deleted = false AND status = "active"${category ? (category === "khac" ? ' AND (categoryKey = "khac" OR categoryKey IS NULL)' : ` AND categoryKey = "${category}"`) : ""}`,
+                offset: skip, limit,
+            });
+            data = result.hits.map((hit) => ({ _id: hit.id, title: hit.title, slug: hit.slug, avatar: hit.avatar, description: hit.description, categoryKey: hit.categoryKey || topic_categories_1.DEFAULT_TOPIC_CATEGORY }));
+            total = (_a = result.estimatedTotalHits) !== null && _a !== void 0 ? _a : data.length;
+        }
+        else {
+            const filter = { deleted: false, status: "active" };
+            if (category)
+                filter.categoryKey = category === "khac" ? { $in: ["khac", null] } : category;
+            [data, total] = yield Promise.all([
+                topic_model_1.default.find(filter).select("title description slug avatar categoryKey featured sortOrder").sort({ sortOrder: 1, title: 1, _id: 1 }).skip(skip).limit(limit).lean(),
+                topic_model_1.default.countDocuments(filter),
+            ]);
+        }
+        res.setHeader("Cache-Control", "no-store");
+        res.json({ code: 200, data, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } });
+    }
+    catch (error) {
+        console.error("[catalog/topics]", error);
+        res.status(500).json({ message: "Không thể tải danh sách chủ đề" });
+    }
+});
+exports.topics = topics;
+const topicGroups = (_req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const visible = { deleted: false, status: "active" };
+        const categories = yield (0, topic_category_service_1.listCategories)(true);
+        const groups = yield Promise.all(categories.map((category) => __awaiter(void 0, void 0, void 0, function* () {
+            const filter = Object.assign(Object.assign({}, visible), { categoryKey: category.key === "khac" ? { $in: ["khac", null] } : category.key });
+            const [items, total] = yield Promise.all([
+                topic_model_1.default.find(filter).select("title slug avatar description categoryKey featured sortOrder")
+                    .sort({ sortOrder: 1, createdAt: -1 }).limit(6).lean(),
+                topic_model_1.default.countDocuments(filter),
+            ]);
+            return Object.assign(Object.assign({}, category), { total, topics: items });
+        })));
+        const featured = yield topic_model_1.default.find(Object.assign(Object.assign({}, visible), { featured: true }))
+            .select("title slug avatar description categoryKey sortOrder")
+            .sort({ sortOrder: 1, createdAt: -1 }).limit(8).lean();
+        res.setHeader("Cache-Control", "no-store");
+        res.json({ code: 200, featured, groups: groups.filter(g => g.total > 0) });
+    }
+    catch (error) {
+        console.error("[catalog/topicGroups]", error);
+        res.status(500).json({ message: "Không thể tải các nhóm chủ đề" });
+    }
+});
+exports.topicGroups = topicGroups;
+const topicDetail = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { page, limit, skip } = pageOptions(req);
+        const key = req.params.topicSlug;
+        const identity = mongoose_1.default.isValidObjectId(key) ? { $or: [{ slug: key }, { _id: key }] } : { slug: key };
+        const topic = yield topic_model_1.default.findOne(Object.assign(Object.assign({}, identity), { deleted: false, status: "active" }))
+            .select("title slug description avatar").lean();
+        if (!topic) {
+            res.status(404).json({ message: "Không tìm thấy chủ đề" });
+            return;
+        }
+        const filter = { topicId: String(topic._id), deleted: false, status: "active" };
+        const [songs, total] = yield Promise.all([
+            song_model_1.default.find(filter).select("title slug avatar singerId listen like").sort({ listen: -1, _id: -1 }).skip(skip).limit(limit).lean(),
+            song_model_1.default.countDocuments(filter),
+        ]);
+        const singerIds = [...new Set(songs.map(song => { var _a; return String((_a = song.singerId) !== null && _a !== void 0 ? _a : ""); }).filter(id => mongoose_1.default.isValidObjectId(id)))];
+        const singers = yield singer_model_1.default.find({ _id: { $in: singerIds }, deleted: false }).select("fullName slug").lean();
+        const singerMap = new Map(singers.map(s => [String(s._id), { fullName: s.fullName, slug: s.slug }]));
+        const data = songs.map(song => { var _a, _b, _c; return ({
+            _id: song._id, title: song.title, slug: song.slug, avatar: song.avatar,
+            listen: (_a = song.listen) !== null && _a !== void 0 ? _a : 0, like: (_b = song.like) !== null && _b !== void 0 ? _b : 0,
+            singer: (_c = singerMap.get(String(song.singerId))) !== null && _c !== void 0 ? _c : null,
+        }); });
+        res.setHeader("Cache-Control", "no-store");
+        res.json({ code: 200, data: { topic, songs: data }, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } });
+    }
+    catch (error) {
+        console.error("[catalog/topicDetail]", error);
+        res.status(500).json({ message: "Không thể tải bài hát của chủ đề" });
+    }
+});
+exports.topicDetail = topicDetail;
+const liked = (_req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const userId = res.locals.authUserId;
+        const likedSongs = yield song_like_model_1.default.find({ userId }).sort({ createdAt: -1 }).select("songId").lean();
+        const songIds = likedSongs.map(item => item.songId);
+        const songs = yield song_model_1.default.find({ _id: { $in: songIds }, deleted: false, status: "active" })
+            .select("title slug avatar singerId listen like").lean();
+        const songMap = new Map(songs.map(song => [String(song._id), song]));
+        const singerIds = [...new Set(songs.map(song => { var _a; return String((_a = song.singerId) !== null && _a !== void 0 ? _a : ""); }).filter(id => mongoose_1.default.isValidObjectId(id)))];
+        const singers = yield singer_model_1.default.find({ _id: { $in: singerIds }, deleted: false }).select("fullName slug").lean();
+        const singerMap = new Map(singers.map(s => [String(s._id), { fullName: s.fullName, slug: s.slug }]));
+        const data = songIds.map(id => songMap.get(id)).filter((song) => Boolean(song))
+            .map(song => { var _a, _b, _c; return ({
+            _id: song._id, title: song.title, slug: song.slug, avatar: song.avatar,
+            listen: (_a = song.listen) !== null && _a !== void 0 ? _a : 0, like: (_b = song.like) !== null && _b !== void 0 ? _b : 0,
+            singer: (_c = singerMap.get(String(song.singerId))) !== null && _c !== void 0 ? _c : null,
+        }); });
+        res.setHeader("Cache-Control", "no-store");
+        res.json({ code: 200, data });
+    }
+    catch (error) {
+        console.error("[catalog/liked]", error);
+        res.status(500).json({ message: "Không thể tải các bài hát đã thích" });
+    }
+});
+exports.liked = liked;

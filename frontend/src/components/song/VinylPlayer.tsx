@@ -45,7 +45,7 @@ export default function VinylPlayer({ avatar, title, isPlaying }: Props) {
   }, [isPlaying]);
 
   return (
-    <div className="relative aspect-square w-full">
+    <div className="relative mx-auto aspect-square w-full max-w-[230px] sm:max-w-[250px] md:max-w-[230px] lg:max-w-[270px] xl:max-w-[300px]">
       {/* Glow dưới đĩa */}
       <div
         className="pointer-events-none absolute -bottom-3 left-[10%] right-[10%] h-6"
@@ -55,12 +55,12 @@ export default function VinylPlayer({ avatar, title, isPlaying }: Props) {
       {/* Đĩa vinyl */}
       <div
         ref={vinylRef}
-        className="relative mx-auto h-[92%] w-[92%] translate-x-[4%] overflow-hidden rounded-full"
+        className="relative mx-auto h-[92%] w-[92%] overflow-hidden rounded-full"
         style={{ boxShadow: "0 0 0 3px #1a1a1a,0 0 0 6px #111,0 8px 40px rgba(0,0,0,0.9)" }}
         aria-label={`Đĩa nhạc ${title}`}
       >
         {/* Ảnh bìa phủ toàn đĩa */}
-        <Image src={avatar} alt={title} fill sizes="300px" className="object-cover" priority />
+        <Image src={avatar} alt={title} fill sizes="(max-width: 640px) 230px, (max-width: 1024px) 260px, 300px" className="object-cover" priority />
 
         {/* Overlay rãnh vinyl */}
         <div
@@ -105,8 +105,8 @@ export default function VinylPlayer({ avatar, title, isPlaying }: Props) {
         aria-hidden="true"
       >
         <div
-          className="relative w-[2px] rounded-sm"
-          style={{ height: "65px", background: "linear-gradient(to bottom,#999,#666,#444)" }}
+          className="relative h-[45px] w-[2px] rounded-sm sm:h-[55px] lg:h-[65px]"
+          style={{ background: "linear-gradient(to bottom,#999,#666,#444)" }}
         >
           <div
             className="absolute -bottom-[7px] left-1/2 h-[6px] w-[6px] -translate-x-1/2 rounded-full bg-[#4ade80]"

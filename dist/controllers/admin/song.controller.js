@@ -16,6 +16,8 @@ exports.editPatch = exports.edit = exports.createPost = exports.create = exports
 const song_model_1 = __importDefault(require("../../models/song.model"));
 const singer_model_1 = __importDefault(require("../../models/singer.model"));
 const topic_model_1 = __importDefault(require("../../models/topic.model"));
+const album_model_1 = __importDefault(require("../../models/album.model"));
+const mongoose_1 = __importDefault(require("mongoose"));
 const system_1 = require("../../config/system");
 const index = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const songs = yield song_model_1.default.find({
@@ -34,7 +36,9 @@ const create = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const singers = yield singer_model_1.default.find({
         deleted: false
     }).select("fullName");
+    const albums = yield album_model_1.default.find({ deleted: false }).select("title status").sort({ title: 1 }).lean();
     res.render('admin/pages/songs/create', {
+        albums,
         pageTitle: "Trang quản lý bài hát",
         topics: topics,
         singers: singers
@@ -48,12 +52,19 @@ const createPost = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     if (req.body.audio) {
         req.body.audio = req.body.audio[0];
     }
+    const albumId = String(req.body.albumId || "");
+    if (albumId && (!mongoose_1.default.isValidObjectId(albumId) || !(yield album_model_1.default.exists({ _id: albumId, deleted: false })))) {
+        res.status(400).send("Album không hợp lệ");
+        return;
+    }
     const data = {
         title: req.body.title,
         avatar: req.body.avatar,
         description: req.body.description,
         singerId: req.body.singerId,
         topicId: req.body.topicId,
+        albumId,
+        trackNumber: Math.max(0, Math.min(999, Math.floor(Number(req.body.trackNumber) || 0))),
         status: req.body.status,
         audio: req.body.audio,
         lyrics: req.body.lyrics,
@@ -75,7 +86,9 @@ const edit = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const singers = yield singer_model_1.default.find({
         deleted: false
     }).select("fullName");
+    const albums = yield album_model_1.default.find({ deleted: false }).select("title status").sort({ title: 1 }).lean();
     res.render('admin/pages/songs/edit', {
+        albums,
         pageTitle: "Trang quản lý bài hát",
         topics: topics,
         singers: singers,
@@ -86,11 +99,18 @@ exports.edit = edit;
 const editPatch = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b;
     const id = req.params.id;
+    const albumId = String(req.body.albumId || "");
+    if (albumId && (!mongoose_1.default.isValidObjectId(albumId) || !(yield album_model_1.default.exists({ _id: albumId, deleted: false })))) {
+        res.status(400).send("Album không hợp lệ");
+        return;
+    }
     const data = {
         title: req.body.title,
         description: req.body.description,
         singerId: req.body.singerId,
         topicId: req.body.topicId,
+        albumId,
+        trackNumber: Math.max(0, Math.min(999, Math.floor(Number(req.body.trackNumber) || 0))),
         status: req.body.status,
         lyrics: req.body.lyrics,
     };

@@ -9,9 +9,6 @@ export const songService = {
     const raw = await songRepository.findBySlug(slug);
     if (!raw) return null;
 
-    // Tăng lượt nghe mỗi lần vào trang detail
-    await songRepository.incrementListen(slug);
-
     const singerIds = raw.singerId ? [String(raw.singerId)] : [];
     const topicIds = raw.topicId ? [String(raw.topicId)] : [];
 

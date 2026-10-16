@@ -48,6 +48,17 @@ block main
                     rows="5"
                     textarea-mce
                 ) !{topic.description}
+            div(class="form-group")
+                label(for="categoryKey") Danh mục hiển thị
+                select(class="form-control" id="categoryKey" name="categoryKey" required)
+                    each category in topicCategories
+                        option(value=category.key selected=(topic.categoryKey || "khac") === category.key)= category.label
+            div(class="form-group")
+                label(for="sortOrder") Thứ tự hiển thị (số nhỏ đứng trước)
+                input(type="number" min="0" max="9999" class="form-control" name="sortOrder" id="sortOrder" value=(topic.sortOrder || 0))
+            div(class="form-group form-check")
+                input(type="checkbox" class="form-check-input" name="featured" id="featured" checked=Boolean(topic.featured))
+                label(class="form-check-label" for="featured") Hiển thị ở mục Nổi bật
             div(class="form-group form-check form-check-inline")
                 input(
                     type="radio"

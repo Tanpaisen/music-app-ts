@@ -13,9 +13,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.checkPermission = exports.requireAuth = void 0;
-const system_1 = require("../config/system");
-const account_model_1 = __importDefault(require("../models/account.model"));
-const role_model_1 = __importDefault(require("../models/role.model"));
+const system_1 = require("../../config/system");
+const account_model_1 = __importDefault(require("../../models/account.model"));
+const role_model_1 = __importDefault(require("../../models/role.model"));
 const requireAuth = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     if (!req.cookies.token) {
         res.redirect(`/${system_1.systemConfig.prefixAdmin}/auth/login`);

@@ -3,8 +3,8 @@ import multer from "multer";
 const upload = multer();
 
 import * as controller from "../../controllers/admin/account.controller";
-import * as uploadToCloud from "../../middleware/uploadCloud.middleware";
-import * as authentication from '../../middleware/authentication.middleware'
+import * as uploadToCloud from "../../middleware/admin/uploadCloud.middleware";
+import * as authentication from '../../middleware/admin/authentication.middleware'
 
 const router: Router = Router();
 

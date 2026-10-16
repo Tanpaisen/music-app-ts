@@ -2,7 +2,7 @@ import { Router } from "express";
 
 import * as controller from "../../controllers/admin/role.controller";
 
-import * as authentication from '../../middleware/authentication.middleware'
+import * as authentication from '../../middleware/admin/authentication.middleware'
 
 const router: Router = Router();
 

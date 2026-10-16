@@ -3,6 +3,14 @@ import { topicRouter } from './topic.route'
 import { songRouter } from './song.route'
 import { searchRouter } from './search.route'
 import { homeRouter } from '../client/home.route'
+import { clientAuthRouter } from './auth.route'
+import { playlistRouter } from './playlist.route'
+import { commentRouter } from './comment.route'
+import { followRouter } from './follow.route'
+import { albumRouter } from "./album.route";
+import { catalogRouter } from './catalog.route'
+import { artistRouter } from './artist.route'
+import { listeningRouter } from './listening.route'
 
 export const routeMain = (app: Express) => {
     app.use('/', homeRouter)
@@ -13,8 +21,22 @@ export const routeMain = (app: Express) => {
 
     app.use('/songs', songRouter)
 
+    app.use('/api/playlists', playlistRouter)
+
+    app.use('/api/comments', commentRouter)
+
+    app.use('/api/follows', followRouter)
+
+    app.use('/api/albums', albumRouter)
+
+    app.use('/api/catalog', catalogRouter)
+
+    app.use('/api/artists', artistRouter)
+
+    app.use('/api/listening', listeningRouter)
+
     app.use('/search', searchRouter)
 
-    
+    app.use('/api/auth', clientAuthRouter)
 
 }

@@ -25,6 +25,7 @@ const connect = () => __awaiter(void 0, void 0, void 0, function* () {
     }
     catch (error) {
         console.error("Error connecting to MongoDB:", error);
+        throw error;
     }
 });
 exports.connect = connect;
